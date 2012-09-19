@@ -21,3 +21,6 @@ a simple template of Makefile.
 
 ##autopreview 
 a light script plugin for Vim that could automatically preview the definition of variables or functions in a tiny window like source insight. Also be hosted at the [vim homepage](http://www.vim.org/scripts/script.php?script_id=2228).
+
+##sendRawPkt
+An example to show how to construct a raw socket packet, with manually setting the mac, ip and udp header.
