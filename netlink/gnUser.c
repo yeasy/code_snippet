@@ -13,7 +13,7 @@
 
 #include <linux/genetlink.h>
 #ifndef NL_FAMILY_NAME
-#define NL_FAMILY_NAME "CONTROL_EXMPL"
+#define NL_FAMILY_NAME "TEST_FAMILY"
 #endif
 
 /*
@@ -24,7 +24,7 @@
 #define GENLMSG_DATA(glh) ((void *)(NLMSG_DATA(glh) + GENL_HDRLEN))
 #define GENLMSG_PAYLOAD(glh) (NLMSG_PAYLOAD(glh, 0) - GENL_HDRLEN)
 #define NLA_DATA(na) ((void *)((char*)(na) + NLA_HDRLEN))
-//#define NLA_PAYLOAD(len) (len - NLA_HDRLEN)
+#define NLA_PAYLOAD(len) (len - NLA_HDRLEN)
 
 int done = 0;
 int nl_socket; /*the socket*/
@@ -59,7 +59,7 @@ error:
 }
 
 /*
- * Send netlink message to kernel.
+ * Send netlink msg_content to kernel.
  * @param socket: Socket to send through.
  * @param buf: Content buffer.
  * @param bufLen: Length of the buffer.
@@ -67,14 +67,14 @@ error:
  */
 int send_to_kernel(int socket, const char *buf, int bufLen)
 {
-    struct sockaddr_nl nladdr;
+    struct sockaddr_nl sa;
     int r;
 
-    memset(&nladdr, 0, sizeof(nladdr));
-    nladdr.nl_family = AF_NETLINK;
+    memset(&sa, 0, sizeof(sa));
+    sa.nl_family = AF_NETLINK;
 
-    while ((r = sendto(socket, buf, bufLen, 0, (struct sockaddr *) &nladdr,
-                    sizeof(nladdr))) < bufLen) {
+    while ((r = sendto(socket, buf, bufLen, 0, (struct sockaddr *) &sa,
+                    sizeof(sa))) < bufLen) {
         if (r > 0) {
             buf += r;
             bufLen -= r;
@@ -86,7 +86,7 @@ int send_to_kernel(int socket, const char *buf, int bufLen)
 
 /*
  * Probe the controller in genetlink to find the family id
- * for the CONTROL_EXMPL family
+ * for the CONTROL_TEST family
  */
 int get_family_id(int socket)
 {
@@ -94,56 +94,58 @@ int get_family_id(int socket)
         struct nlmsghdr n;
         struct genlmsghdr g;
         char buf[256];
-    } family_req;
+    } req;
 
     struct {
         struct nlmsghdr n;
         struct genlmsghdr g;
         char buf[256];
-    } ans;
+    } reply;
 
     int id;
     struct nlattr *na;
-    int rep_len;
+    int reply_len;
 
-    /* Get family name */
-    family_req.n.nlmsg_type = GENL_ID_CTRL;
-    family_req.n.nlmsg_flags = NLM_F_REQUEST;
-    family_req.n.nlmsg_seq = 0;
-    family_req.n.nlmsg_pid = getpid();
-    family_req.n.nlmsg_len = NLMSG_LENGTH(GENL_HDRLEN);
-    family_req.g.cmd = CTRL_CMD_GETFAMILY;
-    family_req.g.version = 0x1;
+    /* netlink header */
+    req.n.nlmsg_type = GENL_ID_CTRL;
+    req.n.nlmsg_flags = NLM_F_REQUEST;
+    req.n.nlmsg_seq = 0;
+    req.n.nlmsg_pid = getpid();
+    req.n.nlmsg_len = NLMSG_LENGTH(GENL_HDRLEN);
+    /* generic netlink header */
+    req.g.cmd = CTRL_CMD_GETFAMILY;
+    req.g.version = 0x1;
 
-    na = (struct nlattr *) GENLMSG_DATA(&family_req);
+    /* attributes */
+    na = (struct nlattr *) GENLMSG_DATA(&req);
     na->nla_type = CTRL_ATTR_FAMILY_NAME;
     /*------change here--------*/
     na->nla_len = strlen(NL_FAMILY_NAME) + 1 + NLA_HDRLEN;
     strcpy(NLA_DATA(na), NL_FAMILY_NAME);
 
-    family_req.n.nlmsg_len += NLMSG_ALIGN(na->nla_len);
+    req.n.nlmsg_len += NLMSG_ALIGN(na->nla_len);
 
-    if (send_to_kernel(socket, (char *) &family_req, family_req.n.nlmsg_len) < 0)
+    if (send_to_kernel(socket, (char *) &req, req.n.nlmsg_len) < 0)
         return -1;
 
-    rep_len = recv(socket, &ans, sizeof(ans), 0);
-    if (rep_len < 0){
+    reply_len = recv(socket, &reply, sizeof(reply), 0);
+    if (reply_len < 0){
         perror("recv");
         return -1;
     }
 
-    /* Validate response message */
-    if (!NLMSG_OK((&ans.n), rep_len)){
-        fprintf(stderr, "invalid reply message\n");
+    /* Validate response msg_content */
+    if (!NLMSG_OK((&reply.n), reply_len)){
+        fprintf(stderr, "invalid reply msg_content\n");
         return -1;
     }
 
-    if (ans.n.nlmsg_type == NLMSG_ERROR) { /* error */
+    if (reply.n.nlmsg_type == NLMSG_ERROR) { /* error */
         fprintf(stderr, "received error\n");
         return -1;
     }
 
-    na = (struct nlattr *) GENLMSG_DATA(&ans);
+    na = (struct nlattr *) GENLMSG_DATA(&reply);
     na = (struct nlattr *) ((char *) na + NLA_ALIGN(na->nla_len));
     if (na->nla_type == CTRL_ATTR_FAMILY_ID) {
         id = *(__u16 *) NLA_DATA(na);
@@ -159,66 +161,76 @@ int main() {
         return -1;
     }
     int id = get_family_id(nl_socket);
+    if (id == -1) {
+        goto end;
+    } 
+    printf("get family id = %d\n",id);
     struct {
         struct nlmsghdr n;
         struct genlmsghdr g;
         char buf[256];
-    } ans;
+    } reply; //reply msg_content
 
     struct {
         struct nlmsghdr n; //netlink header
         struct genlmsghdr g; //generic netlink header
         char buf[256];
-    } req;
+    } req; //request msg_content
     struct nlattr *na;
 
-    /* construct the request. */
+    /* construct the netlink header. */
     req.n.nlmsg_len = NLMSG_LENGTH(GENL_HDRLEN);
     req.n.nlmsg_type = id; //family id
     req.n.nlmsg_flags = NLM_F_REQUEST;
     req.n.nlmsg_seq = 60;
     req.n.nlmsg_pid = getpid();
-    req.g.cmd = 1; //EXMPL_C_ECHO;
 
-    /*compose message*/
-    char * message = "[Userspace to Kernelspace] Hello Kernelspace!"; //message content
-    int mlength = strlen(message)+1;
+    /* construct the generic netlink header. */
+    req.g.cmd = 1; //TEST_CMD_ECHO;
+
+    /*construct the attributes.*/
+    char * msg_content = "Hello Kernelspace!"; //msg_content content
+    int mlength = strlen(msg_content)+1;
     na = (struct nlattr *) GENLMSG_DATA(&req); //attributes
-    na->nla_type = 1; //EXAMP_ATTR_MSG;
-    na->nla_len = mlength+NLA_HDRLEN; //message length
-    memcpy(NLA_DATA(na), message, mlength);
+    na->nla_type = 1; //TEST_ATTR_MSG;
+    na->nla_len = mlength+NLA_HDRLEN; //msg_content length
+    memcpy(NLA_DATA(na), msg_content, mlength);
     req.n.nlmsg_len += NLMSG_ALIGN(na->nla_len); //add new attr len
 
-    /*send message.*/
-    struct sockaddr_nl nladdr;
-    int r;
-    memset(&nladdr, 0, sizeof(nladdr));
-    nladdr.nl_family = AF_NETLINK;
-    r = sendto(nl_socket, (char *)&req, req.n.nlmsg_len, 0, (struct sockaddr *) &nladdr, sizeof(nladdr));
+    /*send the request message.*/
+    struct sockaddr_nl sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.nl_family = AF_NETLINK;
+    if (sendto(nl_socket, (char *)&req, req.n.nlmsg_len, 0, (struct sockaddr *) &sa, sizeof(sa))< 0) {
+        printf("Error in sending msg to kernel.\n");
+        return -1;
+    }
 
-    /*receive message.*/
-    int rep_len = recv(nl_socket, &ans, sizeof(ans), 0);
-    /* Validate response message */
-    if (ans.n.nlmsg_type == NLMSG_ERROR) { /* error */
+    printf("[Userspace]: send msg to kernel: %s.\n",msg_content);
+
+    /*receive the reply message.*/
+    int reply_len = recv(nl_socket, &reply, sizeof(reply), 0);
+    /* Validate response msg_content */
+    if (reply.n.nlmsg_type == NLMSG_ERROR) { /* error */
         printf("error received NACK - leaving \n");
         return -1;
     }
-    if (rep_len < 0) {
-        printf("error receiving reply message via Netlink \n");
+    if (reply_len < 0) {
+        printf("error receiving reply msg via Netlink \n");
         return -1;
     }
-    if (!NLMSG_OK((&ans.n), rep_len)) {
-        printf("invalid reply message received via Netlink\n");
+    if (!NLMSG_OK((&reply.n), reply_len)) {
+        printf("invalid reply msg received via Netlink\n");
         return -1;
     }
 
-    rep_len = GENLMSG_PAYLOAD(&ans.n);
+    reply_len = GENLMSG_PAYLOAD(&reply.n); //get the length of the payload
 
-    /*parse reply message*/
-    na = (struct nlattr *) GENLMSG_DATA(&ans);
-    char * result = (char *)NLA_DATA(na);
-    printf("kernel says: %s\n",result);
+    /*parse the reply message, print the attribute content.*/
+    na = (struct nlattr *) GENLMSG_DATA(&reply);
+    printf("[Userspace]: receive msg from kernel: %s\n",NLA_DATA(na));
 
+end:
     close(nl_socket);
     return 0;
 }

@@ -14,7 +14,7 @@ a light script plugin for Vim that could automatically preview the definition of
 Some code blocks for test algorithms, such as sorting, searching, etc..
 
 ##netlink
-Test bidirectional communication between userspace and kernelspace, using netlink/generic netlink.
+Test bidirectional communication between userspace and kernelspace, using low-level netlink APIs in the userspace, and libnl APIs in the kernelspace.
 
 ##getweb.sh
 A simple but powerful script, which can automatically download a website by URL and save it to local directory for offline reference.
