@@ -13,11 +13,14 @@ a light script plugin for Vim that could automatically preview the definition of
 ##algorithm
 Some code blocks for test algorithms, such as sorting, searching, etc..
 
-##netlink
-Test bidirectional communication between userspace and kernelspace, using low-level netlink APIs in the userspace, and libnl APIs in the kernelspace.
+##getIP
+some scripts to get local ip address of the network interfaces.
 
 ##getweb.sh
 A simple but powerful script, which can automatically download a website by URL and save it to local directory for offline reference.
+
+##netlink
+Test bidirectional communication between userspace and kernelspace, using low-level netlink APIs in the userspace, and libnl APIs in the kernelspace.
 
 ##remoteAuth.sh
 A ssh authorized script, which enables you to login into remote host automatically without passwd inputing.
