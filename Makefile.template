@@ -14,7 +14,7 @@ SRCS=$(wildcard *.c)
 OBJS=$(patsubst %.c,%.o, $(SRCS)) 
 DEPS=$(patsubst %.c,%.d, $(SRCS))
 TARGET=prog
-RM=-rm -f
+RM=rm -f
 
 all: $(DEPS) $(TARGET)
 #all:$(TARGET)
