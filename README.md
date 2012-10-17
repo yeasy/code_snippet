@@ -16,6 +16,9 @@ Some code blocks for test algorithms, such as sorting, searching, etc..
 ##getIP
 some scripts to get local ip address of the network interfaces.
 
+##getopt
+show how to use getopt functions.
+
 ##getweb.sh
 A simple but powerful script, which can automatically download a website by URL and save it to local directory for offline reference.
 
