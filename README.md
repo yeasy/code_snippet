@@ -39,3 +39,6 @@ a simple template of Makefile.
 
 ##sendRawPkt
 An example to show how to construct a raw socket packet, with manually setting the mac, ip and udp header.
+
+##bf-gdt
+An example to show how to use the bloom-filter based gdt data structure.
