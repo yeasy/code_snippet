@@ -28,8 +28,8 @@
 
 #include "bf.h"
 
-#define SETBIT(array, i) (array[i/sizeof(char)] |= (1<<(i%sizeof(char))))
-#define GETBIT(array, i) (array[i/sizeof(char)] & (1<<(i%sizeof(char))))
+#define SETBIT(array, i) (array[i/SIZE_CHAR] |= (1<<(i%SIZE_CHAR)))
+#define GETBIT(array, i) (array[i/SIZE_CHAR] & (1<<(i%SIZE_CHAR)))
 
 /**
  * hash function: SAX.
@@ -84,6 +84,7 @@ struct bloom_filter *bf_create(u32 bf_id, u32 len, u16 port_no, u32 nfuncs)
 #endif
         return NULL;
     }
+    memset(bf->array,0,(len+sizeof(char)-1)/sizeof(char));
 #ifdef __KERNEL__
     if(!(bf->funcs=(hashfunc_t*)kmalloc(nfuncs*sizeof(hashfunc_t),GFP_KERNEL))) {
         kfree(bf->array);
@@ -136,9 +137,27 @@ int bf_add(struct bloom_filter *bf, const char *s)
 {
     u32 i;
 
+    /*printf("sizeof char= %u\n",sizeof(char)); */
     for(i=0; i<bf->nfuncs; ++i) {
-        SETBIT(bf->array, bf->funcs[i](s)%bf->len);
+        /*printf("set bit %u\n",bf->funcs[i](s)%bf->len);*/
+        SETBIT(bf->array,bf->funcs[i](s)%bf->len);
+        int k = bf->funcs[i](s)%bf->len;
+        /*printf("bit[%u] = %u\n",k/8,bf->array[k/8]);*/
     }
+
+#ifdef DEBUG
+    printf("add %s into bf with id=0x%x.\n",s,bf->bf_id);
+    char tmp[256]={0};
+    for (i=0;i<128;i++){
+        if(i%16==0){
+            printf("%u:\t",i/16);
+        }
+        printf("%x",bf->array[i]);
+        if((i+1)%16==0){
+            printf("\n");
+        }
+    }
+#endif
 
     return 0;
 }
@@ -157,7 +176,10 @@ int bf_check(struct bloom_filter *bf, const char *s)
         return 0;
 
     for(i=0; i<bf->nfuncs; ++i) {
-        if(!(GETBIT(bf->array, bf->funcs[i](s)%bf->len))) return 0;
+        if(!(GETBIT(bf->array, bf->funcs[i](s)%bf->len))) {
+            printf("test bit[%u]=%u",bf->funcs[i](s)%bf->len,GETBIT(bf->array, bf->funcs[i](s)%bf->len));
+            return 0;
+        }
     }
 
     return 1;

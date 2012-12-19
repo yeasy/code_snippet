@@ -19,6 +19,10 @@
 #ifndef BF_H
 #define BF_H
 
+#ifndef SIZE_CHAR
+#define SIZE_CHAR 8
+#endif
+
 /* only for userspace compatibility */
 #ifndef __KERNEL__
 typedef unsigned int u32;

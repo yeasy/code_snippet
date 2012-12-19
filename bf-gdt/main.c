@@ -16,7 +16,7 @@ int main(void)
 #endif
 {
     struct bf_gdt *gdt;
-    
+
     if(!(gdt=bf_gdt_init(0))) {
 #ifdef __KERNEL__
         printk("ERROR: Could not create bf-gdt\n");
@@ -35,27 +35,31 @@ int main(void)
     bf_gdt_add_filter(gdt,0,1024);
     bf_gdt_add_filter(gdt,1,2048);
 #ifdef __KERNEL__
-        printk("add bf into bf-gdt.\n");
+    printk("add bf into bf-gdt.\n");
 #else
-        printf("add bf into bf-gdt.\n");
+    printf("add bf into bf-gdt.\n");
 #endif
 
-    bf_gdt_add_item(gdt,0, "080027abb6a5");
-    bf_gdt_add_item(gdt,1, "world");
+    unsigned char q1[] = {0x0a,0x00,0x27,0x00,0x00,0x01};
+    unsigned char q2[] = {0x08,0x00,0x27,0xab,0xb6,0xa5};
+    unsigned char p1[13]={0};
+    unsigned char p2[13]={0};
+    sprintf(p1,"%02x%02x%02x%02x%02x%02x",q1[0],q1[1],q1[2],q1[3],q1[4],q1[5]);
+    sprintf(p2,"%02x%02x%02x%02x%02x%02x",q2[0],q2[1],q2[2],q2[3],q2[4],q2[5]);
+    bf_gdt_add_item(gdt,0, p2);
 
-    char *p="0a0027000001";
-    struct bloom_filter *result = bf_gdt_check(gdt,p);
+    struct bloom_filter *result = bf_gdt_check(gdt,p2);
     if(!result) {
 #ifdef __KERNEL__
-        printk("No match word \"%s\"\n", p);
+        printk("No match word \"%s\"\n", p2);
 #else
-        printf("No match word \"%s\"\n", p);
+        printf("len=%u,No match word \"%s\"\n",strlen(p2), p2);
 #endif
     } else {
 #ifdef __KERNEL__
-        printk("[Match] word \"%s\" in bf %u\n", p,result->bf_id);
+        printk("[Match] word \"%s\" in bf %u\n", p2,result->bf_id);
 #else
-        printf("[Match] word \"%s\" in bf %u\n", p,result->bf_id);
+        printf("[Match] word \"%s\" in bf %u\n", p2,result->bf_id);
 #endif
     }
 
