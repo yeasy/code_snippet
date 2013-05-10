@@ -45,3 +45,6 @@ Example to show how to use the bloom-filter based gdt data structure.
 
 ##json
 Example to show how to use json encoding/decoding in python.
+
+##python
+Simple codes to show how to use python libraries, e.g., regrex, encoding
