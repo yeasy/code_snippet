@@ -13,6 +13,9 @@ A light script plugin for Vim that could automatically preview the definition of
 ##algorithm
 Some code blocks for test algorithms, such as sorting, searching, etc..
 
+##bf-gdt
+Example to show how to use the bloom-filter based gdt data structure.
+
 ##getIP
 Some scripts to get local ip address of the network interfaces.
 
@@ -22,11 +25,20 @@ Show how to use getopt functions.
 ##getweb.sh
 Simple but powerful script, which can automatically download a website by URL and save it to local directory for offline reference.
 
+##json
+Example to show how to use json encoding/decoding in python.
+
 ##mcast
 Test the multi-cast packet sending and receiving, using a thread separately.
 
+##Makefile.template
+Simple template of Makefile.
+
 ##netlink
 Test bidirectional communication between userspace and kernelspace, using low-level netlink APIs in the userspace, and libnl APIs in the kernelspace.
+
+##python
+Simple codes to show how to use python libraries, e.g., regrex, encoding
 
 ##remoteAuth.sh
 An ssh authorized script, which enables you to login into remote host automatically without passwd inputing.
@@ -34,17 +46,8 @@ An ssh authorized script, which enables you to login into remote host automatica
 ##rm.sh
 A much safer rm script, which can automatically backup removed files, in case deleting useful data (beta version).
 
-##Makefile.template
-Simple template of Makefile.
-
 ##sendRawPkt
 Example to show how to construct a raw socket packet, with manually setting the mac, ip and udp header.
 
-##bf-gdt
-Example to show how to use the bloom-filter based gdt data structure.
-
-##json
-Example to show how to use json encoding/decoding in python.
-
-##python
-Simple codes to show how to use python libraries, e.g., regrex, encoding
+##service
+Example of a system service script in Debian/Ubuntu system, supporting running complicated command with arbitrary parameters.

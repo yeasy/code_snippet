@@ -1,0 +1,98 @@
+#! /bin/sh
+#
+# Copyright (C) 2013 AAA, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at:
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+### BEGIN INIT INFO
+# Provides:          provider
+# Required-Start:    $network $named $remote_fs $syslog
+# Required-Stop:     $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: sample service script
+### END INIT INFO
+
+NAME=floodlight
+test -e /etc/default/$NAME && . /etc/default/$NAME
+
+PIDFILE=/var/run/$NAME.pid
+COMMAND="/usr/bin/echo $NAME" #The command to be run
+PNAME="$COMMAND" #The process name to be searched
+
+#exec su - ${RUN_AS_USER} -s /bin/bash -c "cd ${BASEDIR}; exec ${COMMAND} 2>&1 | /usr/bin/logger -t $NAME -p user.info"
+
+start () {
+    pid=`ps aux |grep "$PNAME" |grep -v "grep"| awk '{print $2}'`
+    if [ -n "$pid" ]; then
+        echo "start: Job is already running, process $pid"
+        if [ -e $PIDFILE ]; then
+            [ $pid != `cat $PIDFILE` ] && echo $pid > $PIDFILE
+        else
+            echo $pid > $PIDFILE
+        fi
+        exit 0
+    fi
+    echo -n "starting"
+    #start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON -- $DAEMON_OPTS
+    ${COMMAND} 2>&1 | /usr/bin/logger -t $NAME -p user.info &
+    for i in 1 2 3 4 5 6 7
+    do
+        echo -n "."
+        sleep 1
+    done
+    pid=`ps aux |grep "$PNAME" |grep -v "grep"| awk '{print $2}'`
+    echo $pid > $PIDFILE
+    echo "..done"
+    sleep 1
+    echo "$NAME start/running, process $pid"
+}
+
+stop () {
+    pid=`ps aux |grep "$PNAME" |grep -v "grep"| awk '{print $2}'`
+    if [ -z "$pid" ]; then
+        echo "stop: Unknown instance, service is not runing."
+        ps aux |grep "$PNAME" |grep -v "grep"| awk '{print $2}'|xargs kill -9 2>&1| /usr/bin/logger -t $NAME -p user.info
+    else
+        kill -9 $pid 2>&1| /usr/bin/logger -t $NAME -p user.info
+        [ -e $PIDFILE ] && rm -f $PIDFILE
+        echo "$NAME stop/waiting"
+    fi
+}
+
+status () {
+    pid=`ps aux |grep "$PNAME" |grep -v "grep"| awk '{print $2}'`
+    [ -n "$pid" ] && echo "$NAME start/running, process $pid" || echo "$NAME stop/waiting"
+}
+
+case $1 in
+    start)
+        start
+        ;;
+    stop | force-stop)
+        stop
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    status)
+        status
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status|force-stop}" >&2
+        exit 1
+        ;;
+esac
+
+exit 0
