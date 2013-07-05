@@ -29,6 +29,7 @@ test -e /etc/default/$NAME && . /etc/default/$NAME
 PIDFILE=/var/run/$NAME.pid
 COMMAND="/usr/bin/echo $NAME" #The command to be run
 PNAME="$COMMAND" #The process name to be searched
+#BASEDIR=
 
 #exec su - ${RUN_AS_USER} -s /bin/bash -c "cd ${BASEDIR}; exec ${COMMAND} 2>&1 | /usr/bin/logger -t $NAME -p user.info"
 
@@ -46,6 +47,7 @@ start () {
     echo -n "starting"
     #start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON -- $DAEMON_OPTS
     ${COMMAND} 2>&1 | /usr/bin/logger -t $NAME -p user.info &
+    #su - ${RUN_AS_USER} -s /bin/bash -c "cd ${BASEDIR}; ${COMMAND} 2>&1 | /usr/bin/logger -t $NAME -p user.info &"
     for i in 1 2 3 4 5 6 7
     do
         echo -n "."
