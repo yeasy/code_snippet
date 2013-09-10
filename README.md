@@ -16,6 +16,9 @@ Some code blocks for test algorithms, such as sorting, searching, etc..
 ##bf-gdt
 Example to show how to use the bloom-filter based gdt data structure.
 
+##cpu
+Get overall cpu utilization at linux platform.
+
 ##getIP
 Some scripts to get local ip address of the network interfaces.
 
@@ -24,6 +27,9 @@ Show how to use getopt functions.
 
 ##getweb.sh
 Simple but powerful script, which can automatically download a website by URL and save it to local directory for offline reference.
+
+##io
+Test read and write functions.
 
 ##json
 Example to show how to use json encoding/decoding in python.
