@@ -48,8 +48,13 @@ Simple codes to show how to use python libraries, e.g., regrex, encoding
 ###httpserver
 A simple webserver by python, which tracks request number of each visitor's IP address.
 
-##remoteAuth.sh
+##remote
+###remoteAuth.sh
 An ssh authorized script, which enables you to login into remote host automatically without passwd inputing.
+###pull\_agent.sh
+Daemon agent to pull some content from remote host, and do action after check changes.
+###push\_agent.sh
+Daemon agent to push some msg to remote host file.
 
 ##rm.sh
 A much safer rm script, which can automatically backup removed files, in case deleting useful data (beta version).

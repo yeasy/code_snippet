@@ -4,6 +4,8 @@
 *.DS_Store
 *.swp
 *.out
+*.bak
+*.tmp
 tags
 
 #c/c++ specific
