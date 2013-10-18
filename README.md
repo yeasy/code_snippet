@@ -47,6 +47,8 @@ Test bidirectional communication between userspace and kernelspace, using low-le
 Simple codes to show how to use python libraries, e.g., regrex, encoding
 ###httpserver
 A simple webserver by python, which tracks request number of each visitor's IP address.
+###prefixCutter
+Calculate the cut prefixes by given two prefixes.
 
 ##remote
 ###remoteAuth.sh
