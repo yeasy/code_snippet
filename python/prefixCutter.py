@@ -97,31 +97,36 @@ class Cutter():
             value>>=8
         return '.'.join(ip)
 
-
-
     def getPrefixFromRange(self,min,max):
         """
-        Get numbers of prefix that can represent the range.
+        Get prefixes that can represent the given range.
 
         >>> t= Cutter()
         >>> t.getPrefixFromRange(0,1)
-        ['0.0.0.0/31']
+        ['0.0.0.0/32', '0.0.0.1/32']
         >>> t.getPrefixFromRange(0,7)
         ['0.0.0.0/29']
         >>> t.getPrefixFromRange(1,6)
-        ['0.0.0.1/32', '0.0.0.2/31', '0.0.0.4/31', '0.0.0.6/32']
+        ['0.0.0.1/32', '0.0.0.2/32', '0.0.0.3/32', '0.0.0.4/32', '0.0.0.5/32', '0.0.0.6/32']
         >>> t.getPrefixFromRange(1,30)
-        ['0.0.0.1/32', '0.0.0.2/31', '0.0.0.4/30', '0.0.0.8/29', '0.0.0.16/29', '0.0.0.24/30', '0.0.0.28/31', '0.0.0.30/32']
+        ['0.0.0.1/32', '0.0.0.2/32', '0.0.0.3/32', '0.0.0.4/30', '0.0.0.8/29', '0.0.0.16/29', '0.0.0.24/30', '0.0.0.28/32', '0.0.0.29/32', '0.0.0.30/32']
         """
         if min>max:
             return
         result_range,result_prefix=[],[]
         self.getPrefixFromRangeRun(min,max,result_range)
-        for prefix_range in result_range:
-            result_prefix.append(self.getPrefixString(prefix_range))
+        for range in result_range:
+            if range[1]-range[0]==1: #netmask = /31 is special case here
+                result_prefix.append(self.getPrefixString((range[0],range[0])))
+                result_prefix.append(self.getPrefixString((range[1],range[1])))
+            else:
+                result_prefix.append(self.getPrefixString(range))
         return result_prefix
 
     def getPrefixString(self,prefix_range):
+        """
+        Convert a prefixable range into a prefix string.
+        """
         min,max=prefix_range[0],prefix_range[1]
         assert self.isPrefixable(min,max)
         mask=min^max
@@ -129,6 +134,10 @@ class Cutter():
         return str(self.intToIP(min))+'/'+str(mask_len)
 
     def getPrefixFromRangeRun(self,min,max,result):
+        """
+        Recursive function to cut the given range into prefixable ranges,
+        and store them into result.
+        """
         if min==max:
             result.append((min,min))
             return
@@ -149,6 +158,8 @@ class Cutter():
 
     def isPrefixable(self,min,max):
         """
+        Test if a given range can be converted into a prefix.
+
         >>> Cutter().isPrefixable(0,1)
         True
         >>> Cutter().isPrefixable(1,2)
@@ -171,6 +182,8 @@ class Cutter():
 
     def isPowerofTwo(self,num):
         """
+        Test if the given number is the power of 2
+
         >>> Cutter().isPowerofTwo(-1)
         False
         >>> Cutter().isPowerofTwo(0)
@@ -186,7 +199,7 @@ class Cutter():
 
     def getZeroSuffixLen(self,num):
         """
-        The good suffix is defined as the '0' suffix string
+        Get the '0' suffix string
 
         >>> Cutter().getZeroSuffixLen(0)
         1
@@ -213,3 +226,4 @@ if __name__ == '__main__':
     c= Cutter()
     print len(c.genCuttedPrefix(['10.0.0.0/8','10.0.0.1/32']))
     print c.genCuttedPrefix(['10.0.0.0/8','10.0.0.1/32'])
+
