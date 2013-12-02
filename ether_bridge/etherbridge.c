@@ -1,5 +1,5 @@
 /*
- * Based on tcpdump sniffer, arpsniffer code and Micky Holdorf's etherbridge project.
+ * Based on tcpdump sniffer, arpsniffer code and Micky Holdorf's packetforward project.
  *
  */
 
