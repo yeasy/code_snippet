@@ -19,6 +19,9 @@ Example to show how to use the bloom-filter based gdt data structure.
 ##cpu
 Get overall cpu utilization at linux platform.
 
+##ether\_bridge
+Connect to network interface and forward ethernet packets between them bidirectionally, supporting options.
+
 ##getIP
 Some scripts to get local ip address of the network interfaces.
 

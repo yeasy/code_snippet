@@ -1,0 +1,72 @@
+PACKETFORWARD 0.1
+-----------------
+
+Introduction
+------------
+EtherBridge is an ethernet packet capture/forward application based on libpcap. It is a command line tool that listens on one network interface for ethernet packets and then injects them on the same or another network interface. It has options for packet capture filtering, and support bidirectional forwarding by default.
+
+
+Supported Platforms
+-------------------
+EtherBridge has been compiled and tested on Linux (Ubuntu 12.04). But you are welcome to supply additional feedback if you compile and test it on other platforms succesfully.
+
+Since EtherBridge is based on libpcap, it should be portable to most other BSD and UNIX systems.
+
+
+Compilation and installation
+----------------------------
+In order to compile EtherBridge, you must have libpcap installed on your system. BSD systems like Mac OS X have libpcap preinstalled.
+
+cd to the directory of EtherBridge.
+To compile, type:
+make
+
+To install (requires root access), type:
+sudo make install
+
+To uninstall (requires root access), type:
+sudo make clean
+
+A compiled binary is supplied with this distribution. Just copy it to your system for easy access:
+sudo cp etherbridge /usr/bin/etherbridge
+
+
+Usage
+-----
+EtherBridge will capture IP packets, show header info and content of payload.
+
+One of the uses of EtherBridge is to forward packets from a physical to a virtual interface eg. the tun/tap interface for VPN networks. This is especially useful for games that do not broadcast on all interfaces but only use the default interface and you want to play games with a friend on the internet.
+
+usage:
+   etherbridge <interface> [options]
+
+interface:
+   -i interface1      Capture packets from interface1.
+
+options:
+   -I interface2      Forward packets to interface2.
+   -n number          Number of packets to capture.
+   -h                 Hide packet headers.
+   -p                 Hide payload.
+   -f 'filter'        Tcpdump packet filter expression.
+
+example:
+   sudo etherbridge -i en1 -I tap0 -d 5.124.100.100 -f 'udp port 6112 and dst host 255.255.255.255'
+
+You must have root access to use EtherBridge.
+
+In this example EtherBridge will listen on the en1 network interface for UDP broadcast packets with dst and src port 6112, change the destination address to 5.124.100.100 and inject them on to the tap0 network interface. The src address is automatically changed to match the tap0 network interface.
+
+
+Filter
+------
+EtherBridge is using Tcpdump filter expressions. Below is some examples.
+
+ip                                      Capture all IP packets.
+udp                                     Capture only UDP packets.
+tcp                                     Capture only TCP packets.
+udp port 80                             Capture only UDP packets with src or dst port 80.
+ip host 10.1.2.3                        Capture all IP packets to or from host 10.1.2.3.
+udp dst port 80 and src host 10.1.2.3   Capture only UDP packets to port 80 from host 10.1.2.3.
+
+Read the Tcpdump man pages for more info on filter expressions.
