@@ -1,6 +1,4 @@
 # etherbridge - Makefile
-
-
 CC=gcc
 INCLUDES=-I./ -I/usr/include
 CFLAGS=$(INCLUDES) -O2 -Wall -g
@@ -14,7 +12,6 @@ RM=rm -f
 INSTALL_DIR = /usr/bin
 
 all: $(DEPS) $(TARGET)
-	#all:$(TARGET)
 
 ################ below needs no change in most case ################
 
@@ -32,25 +29,12 @@ $(TARGET): $(OBJS)
 		sed 's,\($*\)\.o[ :]*,\1.o $@: ,g' < $@.$$$$ > $@;\
 		$(RM) $@.$$$$;
 
-.PHONY : clean install uninstall
-	clean: 
+.PHONY: all clean install uninstall
+
+clean: 
 	$(RM) $(TARGET) *.o *.bak *.c~ *.h~ *.d
 
 install:
 	cp -f $(TARGET) $(INSTALL_DIR)/
 uninstall:
 	rm -f $(INSTALL_DIR)/$(TARGET)
-
-
-CC = gcc
-INCLUDE = -I/usr/include
-LIBS = -L/usr/lib -lpcap -lpthread
-INSTALL_DIR = /usr/bin
-
-all: 
-	$(CC) etherbridge.c headers.c -o etherbridge $(INCLUDE) $(LIBS)
-
-
-clean:
-	rm -f $(INSTALL_DIR)/etherbridge
-

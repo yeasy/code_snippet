@@ -3,6 +3,10 @@
  *
  */
 
+#include <pcap.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <string.h>
 /* ethernet headers are always exactly 14 bytes  */
 #ifndef SIZE_ETHERNET
 #define SIZE_ETHERNET 14
@@ -103,3 +107,9 @@ void fprint_ascii_line(const u_char *payload, int len, int offset);
 void print_hex_ascii_line(const u_char *payload, int len, int offset);
 void print_info(void);
 void print_usage(char *name);
+void send_packet(pcap_t *handle_dev2, const u_char *packet, size_t size);
+int parse_pkt(const u_char *packet,int hide_header,int hide_payload);
+int parse_ip(const u_char *packet, int hide_header,int hide_payload);
+int parse_arp(const u_char *packet, int hide_header,int hide_payload);
+void parse_tcp(const u_char *packet,const struct sniff_ip *ip,int size_ip,int hide_header,int hide_payload);
+void parse_udp(const u_char *packet,const struct sniff_ip *ip,int size_ip, int hide_header,int hide_payload);
