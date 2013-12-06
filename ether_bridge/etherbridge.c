@@ -1,5 +1,5 @@
 /*
- * Based on tcpdump sniffer, arpsniffer code and Micky Holdorf's etherbridge project.
+ * Based on tcpdump sniffer, arpsniffer code and Micky Holdorf's packetforward project.
  *
  */
 
@@ -11,15 +11,6 @@
 #include <pthread.h>
 
 #include "headers.h"
-
-#define APP_NAME		"EtherBridge 0.1"
-#define APP_DESC		"Ethernet packet capture and forward application based on libpcap, can connect two ports bidirectionally."
-#define APP_COPYRIGHT	"Copyright (c)"
-
-/* default snap length (maximum bytes per packet to capture) */
-#ifndef BUFSIZ
-#define BUFSIZ 2048
-#endif
 
 char *dev = NULL;						/* capture device1 name */
 char *dev2 = NULL;						/* capture device2 name */
@@ -41,158 +32,7 @@ void send_packet(pcap_t *handle_dev2, const u_char *packet, size_t size);
 void got_packet_dev(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 void got_packet_dev2(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet, pcap_t *fwd_dev);
-void print_payload(const u_char *payload, int len);
-void print_hex_ascii_line(const u_char *payload, int len, int offset);
-void print_app_banner(void);
-void print_app_usage(char *name);
 
-/* app name/banner */
-void print_app_banner(void) {
-
-    printf("\n%s\n", APP_NAME);
-    printf("%s\n", APP_DESC);
-    printf("%s\n", APP_COPYRIGHT);
-    printf("\n");
-
-    return;
-}
-
-/* print help text */
-void print_app_usage(char *name) {
-
-    print_app_banner();
-
-    printf("usage:\n   %s <interface> [options]\n\n", name);
-    printf("interface:\n");
-    printf("   -i interface1      Capture packets from interface1.\n\n");
-    printf("options:\n");
-    printf("   -I interface2      Forward packets to interface2.\n");
-    printf("   -n number          Number of packets to capture.\n");
-    printf("   -h                 Hide packet headers.\n");
-    printf("   -p                 Hide payload.\n");
-    printf("   -f 'filter'        Tcpdump packet filter expression.\n\n");
-    printf("example:\n");
-    printf("   sudo etherbridge -i en1 -I tap0 -f 'udp port 6112 and dst host 255.255.255.255'\n\n'");
-
-    return;
-}
-
-/* print data to file */
-void fprint_ascii_line(const u_char *payload, int len, int offset) {
-
-    int i;
-    int gap;
-    const u_char *ch;
-    FILE *file;
-    file = fopen("/tmp/payload.txt", "w+");
-
-    /* ascii */
-    ch = payload;
-    for(i = 0; i < len; i++) {
-        fprintf(file, "%c", *ch);
-        ch++;
-    }
-    fclose (file);
-
-    return;
-}
-
-/*
- * print data in rows of 16 bytes: offset   hex   ascii
- * 00000   4745 5420 2f20 4854   5450 2f31 2e31 0d0a   GET / HTTP/1.1..
- */
-void print_hex_ascii_line(const u_char *payload, int len, int offset) {
-
-    int i;
-    int gap;
-    const u_char *ch;
-
-    /* offset */
-    printf("%05d   ", offset);
-
-    /* hex */
-    ch = payload;
-    for(i = 0; i < len; i++) {
-        printf("%02x", *ch);
-        ch++;
-        /* print extra space after for visual aid */
-        if (i%2 != 0)
-            printf(" ");
-        if (i == 7)
-            printf("   ");
-    }
-    /* print space to handle_dev line less than 8 bytes */
-    if (len < 8)
-        printf("   ");
-
-    /* fill hex gap with spaces if not full line */
-    if (len < 16) {
-        gap = 16 - len;
-        for (i = 0; i < gap; i++) {
-            printf("  ");
-            if (i%2 == 0)
-                printf(" ");
-        }
-    }
-    printf("   ");
-
-    /* ascii (if printable) */
-    ch = payload;
-    for(i = 0; i < len; i++) {
-        if (isprint(*ch))
-            printf("%c", *ch);
-        else
-            printf(".");
-        ch++;
-    }
-
-    printf("\n");
-
-    return;
-}
-
-/*
- * print packet payload data (avoid printing binary data)
- */
-void print_payload(const u_char *payload, int len) {
-
-    int len_rem = len;
-    int line_width = 16;			/* number of bytes per line */
-    int line_len;
-    int offset = 0;					/* zero-based offset counter */
-    const u_char *ch = payload;
-
-    if (len <= 0)
-        return;
-
-    /* data fits on one line */
-    if (len <= line_width) {
-        print_hex_ascii_line(ch, len, offset);
-        return;
-    }
-
-    /* data spans multiple lines */
-    for ( ;; ) {
-        /* compute current line length */
-        line_len = line_width % len_rem;
-        /* print line */
-        print_hex_ascii_line(ch, line_len, offset);
-        /* compute total remaining */
-        len_rem = len_rem - line_len;
-        /* shift pointer to remaining bytes to print */
-        ch = ch + line_len;
-        /* add offset */
-        offset = offset + line_width;
-        /* check if we have line width chars or less */
-        if (len_rem <= line_width) {
-            /* print last line and get out */
-            print_hex_ascii_line(ch, len_rem, offset);
-            break;
-        }
-    }
-
-    return;
-}
 
 /**
  * Send out a packet through the handle.
@@ -484,13 +324,13 @@ int main(int argc, char **argv) {
                 unidirectional = 1;
                 break;
             default:
-                print_app_usage(argv[0]);
+                print_usage(argv[0]);
                 return 0;
         }
     }
 
     if (dev == NULL) {
-        print_app_usage(argv[0]);
+        print_usage(argv[0]);
         return -1;
     }
 

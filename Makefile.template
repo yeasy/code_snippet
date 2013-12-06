@@ -6,15 +6,16 @@
 # Updated: May 31, 2011
 
 CC=gcc
-INCLUDES=-I./
-CFLAGS=$(INCLUDES) -O2 -Wall -g -m32
-LDFLAGS=-lnsl -lm -lpthread -m32
+INCLUDES=-I./ -I/usr/include
+CFLAGS=$(INCLUDES) -O2 -Wall -g
+LDFLAGS=-L/usr/lib -lpcap -lnsl -lm -lpthread
 SRCS=$(wildcard *.c)
 #SRCS=source.c
 OBJS=$(patsubst %.c,%.o, $(SRCS)) 
 DEPS=$(patsubst %.c,%.d, $(SRCS))
 TARGET=prog
 RM=rm -f
+INSTALL_DIR = /usr/bin
 
 all: $(DEPS) $(TARGET)
 #all:$(TARGET)
@@ -35,6 +36,10 @@ $(TARGET): $(OBJS)
 	sed 's,\($*\)\.o[ :]*,\1.o $@: ,g' < $@.$$$$ > $@;\
 	$(RM) $@.$$$$;
 
-.PHONY : clean
+.PHONY: all clean install uninstall
 clean: 
 	$(RM) $(TARGET) *.o *.bak *.c~ *.h~ *.d
+install:
+	cp -f $(TARGET) $(INSTALL_DIR)/
+uninstall:
+	rm -f $(INSTALL_DIR)/$(TARGET)

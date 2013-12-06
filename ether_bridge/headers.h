@@ -88,3 +88,18 @@ struct sniff_udp {
     unsigned short int uh_len;
     unsigned short int uh_check;
 }; /* total udp header length: 8 bytes (=64 bits) */
+
+#define APP_NAME		"EtherBridge 0.1"
+#define APP_DESC		"Ethernet packet capture and forward application based on libpcap, can connect two ports bidirectionally."
+#define APP_COPYRIGHT	"Copyright (c)"
+
+/* default snap length (maximum bytes per packet to capture) */
+#ifndef BUFSIZ
+#define BUFSIZ 2048
+#endif
+
+void print_payload(const u_char *payload, int len);
+void fprint_ascii_line(const u_char *payload, int len, int offset); 
+void print_hex_ascii_line(const u_char *payload, int len, int offset);
+void print_info(void);
+void print_usage(char *name);
