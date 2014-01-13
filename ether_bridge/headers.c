@@ -143,7 +143,7 @@ void print_usage(char *name) {
     printf("   -u                 unidirectional forwarding from interface1 to interface2.\n");
     printf("   -f 'filter'        Tcpdump packet filter expression.\n\n");
     printf("example:\n");
-    printf("   sudo etherbridge -i eth0 -I eth1 -f 'udp port 6112 and dst host 192.168.1.2'\n\n'");
+    printf("   sudo etherbridge -i eth0 -I eth1 -f 'udp port 6112 and dst host 192.168.1.2'\n");
 
     return;
 }
@@ -162,6 +162,10 @@ void send_packet(pcap_t *handle, const u_char *packet, size_t size) {
    }
    return;
 }
+
+/**
+ * parse the packet.
+ */
 int parse_pkt(const u_char *packet,int hide_header,int hide_payload){
     const struct sniff_ethernet *ethernet;  /* The ethernet header [1] */
     /* define ethernet header */
@@ -178,6 +182,7 @@ int parse_pkt(const u_char *packet,int hide_header,int hide_payload){
 }
 /**
  * Process the ip packet.
+ * return the length of the ip packet.
  */
 int parse_ip(const u_char *packet,int hide_header,int hide_payload){
     const struct sniff_ip *ip;              /* The IP header */
@@ -212,6 +217,7 @@ int parse_ip(const u_char *packet,int hide_header,int hide_payload){
 
 /**
  * Process the arp packet.
+ * return -1 for arp request, will avoid fwding these pkts.
  */
 int parse_arp(const u_char *packet,int hide_header,int hide_payload){
 
@@ -220,7 +226,7 @@ int parse_arp(const u_char *packet,int hide_header,int hide_payload){
     printf("Hardware type: %s\n", (ntohs(arpheader->htype) == 1) ? "Ethernet" : "Unknown"); 
     printf("Protocol type: %s\n", (ntohs(arpheader->ptype) == 0x0800) ? "IPv4" : "Unknown"); 
     printf("Operation: %s\n", (ntohs(arpheader->oper) == ARP_REQUEST)? "ARP Request" : "ARP Reply"); 
-    return ntohs(arpheader->oper);
+    return (ntohs(arpheader->oper) == ARP_REQUEST)? -1 : 1;
 }
 
 /**
