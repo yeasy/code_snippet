@@ -13,3 +13,7 @@ sudo aptitude update;
 sudo dpkg --set-selections < package.list && sudo aptitude upgrade
 
 cp -f ./.bash* /home/${user}/
+
+
+cp rm.sh /usr/local/bin/
+cp getweb.sh /usr/local/bin/

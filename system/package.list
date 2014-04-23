@@ -1,3 +1,4 @@
 apt-fast install
 axel install
 bash_completion install
+ssh install
