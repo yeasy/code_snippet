@@ -28,9 +28,6 @@ Some scripts to get local ip address of the network interfaces.
 ##getopt
 Show how to use getopt functions.
 
-##getweb.sh
-Simple but powerful script, which can automatically download a website by URL and save it to local directory for offline reference.
-
 ##io
 Test read and write functions.
 
@@ -63,9 +60,6 @@ Daemon agent to pull some content from remote host, and do action after check ch
 ###push\_agent.sh
 Daemon agent to push some msg to remote host file.
 
-##rm.sh
-A much safer rm script, which can automatically backup removed files, in case deleting useful data (beta version).
-
 ##sendRawPkt
 Example to show how to construct a raw socket packet, with manually setting the mac, ip and udp header.
 
@@ -74,3 +68,7 @@ Example of a system service script in Debian/Ubuntu system, supporting running c
 
 ##system
 Some system related tools, such as init a fresh os.
+###getweb.sh
+Simple but powerful script, which can automatically download a website by URL and save it to local directory for offline reference.
+###rm.sh
+A much safer rm script, which can automatically backup removed files, in case deleting useful data (beta version).
