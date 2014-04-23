@@ -71,3 +71,6 @@ Example to show how to construct a raw socket packet, with manually setting the 
 
 ##service
 Example of a system service script in Debian/Ubuntu system, supporting running complicated command with arbitrary parameters.
+
+##system
+Some system related tools, such as init a fresh os.
