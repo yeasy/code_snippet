@@ -49,6 +49,8 @@ Simple codes to show how to use python libraries, e.g., regrex, encoding
 A simple webserver by python, which tracks request number of each visitor's IP address.
 ###prefixCutter
 Calculate the cut prefixes by given two prefixes.
+###remote\_watcher
+Watch the specified file on remote, trigger action when there finds keyword in it.
 ###sm\_watcher
 Given some keyword and an url, will track it on the url webpage. User sm as an example.
 
