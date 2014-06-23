@@ -28,7 +28,7 @@ work_path = os.path.split(os.path.realpath(__file__))[0]+"/"
 os.system("cd "+work_path)
 
 print "Get remote file (Need automatical auth first)."
-os.system("scp root@%s:%s ./%s 2>&1 > /dev/null" %(remote_ip,remote_file,cache_file))
+os.system("scp root@%s:%s %s 2>&1 > /dev/null" %(remote_ip,remote_file,cache_file))
 os.system("cp %s %s" %(cache_file,cache_file_bk))
 
 def trigger_action(line):
@@ -43,7 +43,7 @@ def main():
     #Recursively obtain and parse the log msg, to find alert.
     while nLoop > 0:
         os.system("rm -f diff.txt 2>&1 > /dev/null")
-        os.system("scp root@%s:%s ./%s 2>&1 > /dev/null" %(remote_ip,remote_file,cache_file))
+        os.system("scp root@%s:%s %s 2>&1 > /dev/null" %(remote_ip,remote_file,cache_file))
         os.system("diff %s %s >> diff.txt" %(cache_file,cache_file_bk))
         f = open("diff.txt")
         for line in f:
