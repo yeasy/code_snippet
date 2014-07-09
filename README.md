@@ -44,7 +44,9 @@ Simple template of Makefile.
 Test bidirectional communication between userspace and kernelspace, using low-level netlink APIs in the userspace, and libnl APIs in the kernelspace.
 
 ##python
-Simple codes to show how to use python libraries, e.g., regrex, encoding
+Simple codes to show how to use python libraries, e.g., regrex, encoding.
+###amqp
+Demo the usage of AMQP by the kombu.
 ###httpserver
 A simple webserver by python, which tracks request number of each visitor's IP address.
 ###prefixCutter
