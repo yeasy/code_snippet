@@ -55,6 +55,9 @@ Calculate the cut prefixes by given two prefixes.
 Watch the specified file on remote, trigger action when there finds keyword in it.
 ###sm\_watcher
 Given some keyword and an url, will track it on the url webpage. User sm as an example.
+###wsgi
+A demo to show how to use wsgi and paste deployment to provide a web service. 
+Run `python server.py` and get the version information by visiting localhost:8080.
 
 ##remote
 ###remoteAuth.sh
