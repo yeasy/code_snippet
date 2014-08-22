@@ -1,0 +1,14 @@
+#!/bin/sh
+#This script will show all ip address inside each network namespace
+#If give a parameter, then it will show the network namespace containing the key
+
+for name in `ip netns show`
+do
+    [[ $name == qdhcp-* || $name == qrouter-* ]] && result=`ip netns exec $name ip addr`
+    if [ $# -gt 0 ]; then
+	[[ -n "`echo $result|grep $1`" ]] && echo $name && echo -e $result && break
+    else
+        echo $name
+	echo -e $result
+    fi 
+done
