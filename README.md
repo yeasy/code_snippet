@@ -47,6 +47,8 @@ Test bidirectional communication between userspace and kernelspace, using low-le
 Simple codes to show how to use python libraries, e.g., regrex, encoding.
 ###amqp
 Demo the usage of AMQP by the kombu and pika.
+### concurrency
+Some scripts on concurrency programming, such as threading, eventlet...
 ###httpserver
 A simple webserver by python, which tracks request number of each visitor's IP address.
 ###mqtt
