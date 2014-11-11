@@ -102,7 +102,7 @@ if __name__ == "__main__":
                     interest.append(e)
                     flag = True
         if flag:
-            print '\a==============='
+            print '\a\7'
             for i in range(len(interest)):
                 print '%s %s\n \t %s %s' %(getTime(int(interest[i][2])),
                                        interest[i][3], interest[i][1], "URL="+ct_prefix+interest[i][0])
