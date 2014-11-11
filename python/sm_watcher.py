@@ -1,10 +1,13 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/python
-#coding: utf8
 # Usage: ./prog board_name keyword
 # By default, it will show all articles at the couponslife board
 
+import random
+import re
+import sys
+import time
 import urllib2
-import re, time, random, sys
 
 headers_pool=[
     {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'},
@@ -13,33 +16,43 @@ headers_pool=[
 ]
 
 default_board='couponslife'
-default_keyword = ".*" #The keyword you want to track
+default_keyword = ".*" # The keyword you want to track
 default_url = "http://www.newsmth.net/bbsdoc.php?board=%s&ftype=6" % default_board
 default_ct_prefix = "http://www.newsmth.net/bbstcon.php?board=%s&gid=" % default_board
 
 
-#get a given url page
-def getPage(headers,url):
-    if not url:
-        return
-    req = urllib2.Request(url,headers=headers)
-    response = urllib2.urlopen(req)
-    return response.read()
-
-#get the board content
-def getBoard(headers,url):
+def getPage(headers, url):
     '''
-    Return articles collection, in format of [[gid,id,ts,title],...]
+    Get the page content of given url
+
     :param headers:
     :param url:
-    :return:
+    :return: page or None
+    '''
+    if not url:
+        return None
+    try:
+        req = urllib2.Request(url, headers=headers)
+        response = urllib2.urlopen(req)
+        return response.read()
+    except urllib2.URLError:
+        return None
+
+def getBoard(url, keyword=None):
+    '''
+    Return articles collection of board, in format of [[gid,id,ts,title],...]
+    :param url:
+    :return: article list
     '''
     if not url:
         return
     now = time.time()
     result = []
-    page = getPage(headers, url)
+    headers = headers_pool[random.randint(0, len(headers_pool)-1)]
     pat = re.compile(u"c.o\(.*?\);", re.UNICODE)
+    page = getPage(headers, url)
+    if not page:
+        return []
     content = page.decode('gb18030', 'ignore')#.encode('utf8')
     entries = re.findall(pat, content)
     for e in entries:
@@ -49,20 +62,16 @@ def getBoard(headers,url):
         id = id.strip("' ")
         #print [gid,id,ts,title]
         if id != 'deliver' and now - int(ts) < 3600: # only care recent hour
-            result.append([gid, id, ts, title])
+            if keyword and re.search(keyword, e[3]):
+                result.append([gid, id, ts, title])
     return result
 
-#get the item content
-def getItem(headers,url):
-    if url == None:
-        return
-    result = []
-    page = getPage(headers,url)
-    pat = re.compile(u"c.o\(.*?\);", re.UNICODE)
-    content = page.decode('gb18030', 'ignore')#.encode('utf8')
-    print content
-
 def getTime(ticks=None):
+    '''
+    Get the time string of given ticks or now
+    :param ticks:
+    :return:
+    '''
     t = ticks or time.time()
     return time.strftime('%H:%M:%S',time.localtime(t))
     #return time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(t))
@@ -74,7 +83,7 @@ if __name__ == "__main__":
         url, board, keyword, ct_prefix = default_url, default_board, \
                                        default_keyword, default_ct_prefix
     else:
-        board,keyword = sys.argv[1], sys.argv[2]
+        board, keyword = sys.argv[1], sys.argv[2]
         url = default_url.replace(default_board, board)
         ct_prefix = default_ct_prefix.replace(default_board, board)
 
@@ -83,27 +92,20 @@ if __name__ == "__main__":
     while True:
         n += 1
         flag = False
-        headers = headers_pool[random.randint(0, len(headers_pool)-1)]
-        try:
-            entries_new = getBoard(headers, url)
-        except urllib2.URLError:
-            continue
-        if len(entries_new) <= 0:
+        entries_new = getBoard(url, keyword)
+        if not entries_new:
             continue
         if entries_old != entries_new:
+            old_title_list = set(map(lambda e: e[3], entries_old))
             for e in entries_new:
-                if e not in entries_old and re.search(keyword, e[3]):
-                #intrested article that not output yet
-                    if e not in interest:
-                        interest.append(e)
-                        flag = True
+                if e[3] not in old_title_list:
+                    interest.append(e)
+                    flag = True
         if flag:
-            print "==============="
+            print '\a==============='
             for i in range(len(interest)):
-                print '%s %s\n \t\t %s %s' %(getTime(int(interest[i][2])),
+                print '%s %s\n \t %s %s' %(getTime(int(interest[i][2])),
                                        interest[i][3], interest[i][1], "URL="+ct_prefix+interest[i][0])
-        if len(entries_old) > 100:
-            entries_old = entries_new[100:]
-        else:
             entries_old = entries_new
+            interest = []
         time.sleep(random.uniform(1, 5))
