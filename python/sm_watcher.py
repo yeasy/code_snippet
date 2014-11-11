@@ -85,14 +85,15 @@ if __name__ == "__main__":
         flag = False
         headers = headers_pool[random.randint(0, len(headers_pool)-1)]
         try:
-            entries = getBoard(headers, url)
+            entries_new = getBoard(headers, url)
         except urllib2.URLError:
             continue
-        if len(entries) <= 0:
+        if len(entries_new) <= 0:
             continue
-        if entries_old != entries:
-            for e in entries:
-                if re.search(keyword, e[3]):
+        if entries_old != entries_new:
+            for e in entries_new:
+                if e not in entries_old and re.search(keyword, e[3]):
+                #intrested article that not output yet
                     if e not in interest:
                         interest.append(e)
                         flag = True
@@ -101,9 +102,8 @@ if __name__ == "__main__":
             for i in range(len(interest)):
                 print '%s %s\n \t\t %s %s' %(getTime(int(interest[i][2])),
                                        interest[i][3], interest[i][1], "URL="+ct_prefix+interest[i][0])
-            interest = []
         if len(entries_old) > 100:
-            entries_old = entries[100:]
+            entries_old = entries_new[100:]
         else:
-            entries_old = entries
+            entries_old = entries_new
         time.sleep(random.uniform(1, 5))
