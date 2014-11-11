@@ -1,5 +1,8 @@
 #!/usr/bin/python
 #coding: utf8
+# Usage: ./prog board_name keyword
+# Defaultly, it will show all articles at couponslife baord
+
 import urllib2
 import re,time,random,sys
 from BeautifulSoup import BeautifulSoup
@@ -49,24 +52,26 @@ def getTime(ticks=None):
         t = time.time()
     else:
         t = ticks
-    return time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(t))
+    #return time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(t))
+    return time.strftime('%H:%M:%S',time.localtime(t))
 
+default_board='couponslife'
+default_keyword = ".*" #The keyword you want to track
 
-default_url = "http://www.newsmth.net/bbsdoc.php?board=seconddigi&ftype=6"
-default_ct_prefix = "http://www.newsmth.net/bbstcon.php?board=seconddigi&gid="
-default_keyword = "3[cC]|ipad" #The keyword you want to track
+default_url = "http://www.newsmth.net/bbsdoc.php?board=%s&ftype=6" % default_board
+default_ct_prefix = "http://www.newsmth.net/bbstcon.php?board=%s&gid=" % default_board
 
-#Usage: ./prog board_name keyword
 if __name__ == "__main__":
     backup,interest=[],[]
     n = 0
     if len(sys.argv) < 3:
-        url,keyword,ct_prefix = default_url,default_keyword,default_ct_prefix
+        url,board,keyword,ct_prefix = default_url,default_board, default_keyword,default_ct_prefix
     else:
         board,keyword = sys.argv[1],sys.argv[2]
-        url = default_url.replace("seconddigi",board)
-        ct_prefix = default_ct_prefix.replace("seconddigi",board)
+        url = default_url.replace(default_board,board)
+        ct_prefix = default_ct_prefix.replace(default_board,board)
 
+    print 'board=%s, keyword=%s' %(board,keyword)
     print "###### start at ", getTime()
     while True:
         n = n+1
@@ -84,6 +89,6 @@ if __name__ == "__main__":
         if flag:
             print "==============="
             for i in range(len(interest)):
-                print getTime(int(interest[i][2]))+"--"+interest[i][1]+interest[i][3]+", URL="+ct_prefix+interest[i][0]
+                print getTime(int(interest[i][2]))+":"+interest[i][1]+interest[i][3]+"  URL="+ct_prefix+interest[i][0]
         backup = entries
         time.sleep(random.uniform(1,5))
