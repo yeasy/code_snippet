@@ -1,7 +1,9 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#!/usr/bin/python
 # Usage: ./prog board_name keyword
-# By default, it will show all articles at the couponslife board
+# By default, it will show all articles at the couponslife board of newsmth
+# Maintained at
+# https://github.com/yeasy/code_snippet/blob/master/python/sm_watcher.py
 
 import random
 import re
@@ -9,103 +11,114 @@ import sys
 import time
 import urllib2
 
+
+
 headers_pool=[
     {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'},
     {'User-Agent':'Mozilla/5.0 (compatible;MSIE 9.0; Windows NT 6.1; Trident/5.0)'},
     {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US;) AppleWebKit/534.50(KHTML, like Gecko) Version/5.1 Safari/534.50'}
 ]
 
-default_board='couponslife'
-default_keyword = ".*" # The keyword you want to track
-default_url = "http://www.newsmth.net/bbsdoc.php?board=%s&ftype=6" % default_board
-default_ct_prefix = "http://www.newsmth.net/bbstcon.php?board=%s&gid=" % default_board
+DEFAULT_BOARD = 'couponslife'
+DEFAULT_KEYWORD = ".*" # The keyword you want to track
+DEFAULT_URL = "http://www.newsmth.net/bbsdoc.php?board=%s&ftype=6" % DEFAULT_BOARD
+DEFAULT_PREFIX = "http://www.newsmth.net/bbstcon.php?board=%s&gid=" % DEFAULT_BOARD
 
 
-def getPage(headers, url):
-    '''
-    Get the page content of given url
-
-    :param headers:
-    :param url:
-    :return: page or None
-    '''
-    if not url:
-        return None
-    try:
-        req = urllib2.Request(url, headers=headers)
-        response = urllib2.urlopen(req)
-        return response.read()
-    except urllib2.URLError:
-        return None
-
-def getBoard(url, keyword=None):
-    '''
-    Return articles collection of board, in format of [[gid,id,ts,title],...]
-    :param url:
-    :return: article list
-    '''
-    if not url:
-        return
-    now = time.time()
-    result = []
-    headers = headers_pool[random.randint(0, len(headers_pool)-1)]
-    pat = re.compile(u"c.o\(.*?\);", re.UNICODE)
-    page = getPage(headers, url)
-    if not page:
-        return []
-    content = page.decode('gb18030', 'ignore')#.encode('utf8')
-    entries = re.findall(pat, content)
-    for e in entries:
-        f =  e.split(',')
-        gid, id, ts, title = f[1], f[2], f[4], f[5]
-        title = title.strip("' ")
-        id = id.strip("' ")
-        #print [gid,id,ts,title]
-        if id != 'deliver' and now - int(ts) < 3600: # only care recent hour
-            if keyword and re.search(keyword, e[3]):
-                result.append([gid, id, ts, title])
-    return result
-
-def getTime(ticks=None):
-    '''
+def get_time_str(ticks=None, format='%H:%M:%S'):
+    """
     Get the time string of given ticks or now
-    :param ticks:
+    :param ticks: ticks to convert
+    :param format: Output based on the format
     :return:
-    '''
+    """
     t = ticks or time.time()
-    return time.strftime('%H:%M:%S',time.localtime(t))
-    #return time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(t))
+    return time.strftime(format, time.localtime(t))
+
+
+class BoardWatcher(object):
+    """
+    Watcher for a given board, will keep printing new articles with keyword.
+    This class is easily implemented based on Threading.Thread or
+    Multiprocessing.Process, but now it seems not necessary.
+    """
+
+    def __init__(self, board=DEFAULT_BOARD, keyword=DEFAULT_KEYWORD):
+        self.board = board
+        self.keyword = keyword
+        self.url = DEFAULT_URL.replace(DEFAULT_BOARD, self.board)
+        self.ct_prefix = DEFAULT_PREFIX.replace(DEFAULT_BOARD, self.board)
+        self.coding = sys.getfilesystemencoding()
+
+    def run(self):
+        print 'board=%s, keyword=%s' %(board, keyword)
+        print "###### start at ", get_time_str(format='%Y-%m-%d %H:%M:%S')
+        entries_old = []
+        while True:
+            entries_new = self.get_board()
+            if not entries_new:
+                continue
+            old_title_list = set(map(lambda x: x[3], entries_old))
+            hit_entries = filter(lambda x: x[3] not in old_title_list, entries_new)
+            entries_old = entries_new
+            self.print_out(hit_entries)
+            time.sleep(random.uniform(1, 7))
+
+    def get_board(self):
+        """
+        Return articles collection on board, in format of [[gid,id,ts,title],...]
+        :return: article list or []
+        """
+        if not self.board:
+            return
+        now = time.time()
+        result = []
+        pat = re.compile(u"c.o\(.*?\);", re.UNICODE)
+        page = self.get_page()
+        if not page:
+            return []
+        content = page.decode('gb18030', 'ignore')
+        entries = re.findall(pat, content)
+        for e in entries:
+            f = e.split(',')
+            gid, uid, ts, title = f[1], f[2], f[4], f[5]
+            title, uid = title.strip("' "), uid.strip("' ")
+            #print [gid,id,ts,title]
+            if uid != 'deliver' and now - int(ts) < 3600: # only care recent hour
+                if keyword and re.search(keyword, e[3]):
+                    result.append([gid, uid, ts, title])
+        return result
+
+    def get_page(self):
+        """
+        Get the page content of given url.
+        :return: page or None
+        """
+        if not self.url:
+            return None
+        headers = headers_pool[random.randint(0, len(headers_pool)-1)]
+        try:
+            req = urllib2.Request(url=self.url, headers=headers)
+            response = urllib2.urlopen(req)
+            return response.read()
+        except urllib2.URLError:
+            return None
+
+    def print_out(self, entries):
+        """
+        Out put the interested entries
+        :param entries: Entries to print_out
+        :return:
+        """
+        for e in entries:
+            print '%s %s\t \t %s %s' \
+                  %( get_time_str(int(e[2])),
+                                       e[3], e[1], "URL="+self.ct_prefix+e[0])
 
 if __name__ == "__main__":
-    entries_old, interest=[], []
-    n = 0
     if len(sys.argv) < 3:
-        url, board, keyword, ct_prefix = default_url, default_board, \
-                                       default_keyword, default_ct_prefix
+        board, keyword = DEFAULT_BOARD, DEFAULT_KEYWORD
     else:
         board, keyword = sys.argv[1], sys.argv[2]
-        url = default_url.replace(default_board, board)
-        ct_prefix = default_ct_prefix.replace(default_board, board)
 
-    print 'board=%s, keyword=%s' %(board, keyword)
-    print "###### start at ", getTime()
-    while True:
-        n += 1
-        flag = False
-        entries_new = getBoard(url, keyword)
-        if not entries_new:
-            continue
-        if entries_old != entries_new:
-            old_title_list = set(map(lambda e: e[3], entries_old))
-            for e in entries_new:
-                if e[3] not in old_title_list:
-                    interest.append(e)
-                    flag = True
-        if flag:
-            print '\a\7',
-            for i in range(len(interest)):
-                print '%s %s\n \t %s %s' %(getTime(int(interest[i][2])),
-                                       interest[i][3], interest[i][1], "URL="+ct_prefix+interest[i][0])
-            entries_old = entries_new
-            interest = []
-        time.sleep(random.uniform(1, 5))
+    BoardWatcher(board, keyword).run()
