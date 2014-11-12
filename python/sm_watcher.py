@@ -62,15 +62,16 @@ class BoardWatcher(threading.Thread, object):
     def run(self):
         print 'board=%s, keyword=%s' % (self.board, self.keyword)
         print "###### start at ", get_time_str(str_format='%Y-%m-%d %H:%M:%S')
-        entries_old = []
+        latest_time = 0
         while True:
             entries_new = self.get_board()
             if not entries_new:
                 continue
-            old_title_list = set(map(lambda x: x[3], entries_old))
-            hit_entries = filter(lambda x: x[3] not in old_title_list,
+            entries_new.sort(key=lambda x: x[0])
+            hit_entries = filter(lambda x: x[0] > latest_time,
                                  entries_new)
-            entries_old = entries_new
+            if latest_time < entries_new[-1][0]:
+                latest_time = entries_new[-1][0]
             self.print_out(hit_entries)
             time.sleep(random.uniform(1, 7))
 
@@ -92,12 +93,12 @@ class BoardWatcher(threading.Thread, object):
         entries = re.findall(pat, content)
         for e in entries:
             f = e.split(',')
-            gid, uid, ts, title = f[1], f[2], f[4], f[5]
+            ts, title, uid, gid = int(f[4]), f[5], f[2], f[1]
             title, uid = title.strip("' "), uid.strip("' ")
             #print [gid,id,ts,title]
-            if uid != 'deliver' and now - int(ts) < 3600:  # only in recent hour
+            if uid != 'deliver' and now - ts < 3600:  # only in recent hour
                 if keyword and re.search(keyword, e[3]):
-                    result.append([gid, uid, ts, title])
+                    result.append([ts, title, uid, gid])
         return result
 
     def get_page(self):
@@ -112,18 +113,18 @@ class BoardWatcher(threading.Thread, object):
             req = urllib2.Request(url=self.url, headers=headers)
             response = urllib2.urlopen(req, timeout=5)
             return response.read()
-        except urllib2.URLError:
+        except Exception:
             return None
 
     def print_out(self, entries):
         """
-        Out put the interested entries
+        Out put the interested entries: [ts, title, uid, gid ]
         :param entries: Entries to print_out
         :return:
         """
         for e in entries:
-            print '%s %s\t \t %s %s' % (get_time_str(int(e[2])), e[3], e[1],
-                                        "URL="+self.ct_prefix+e[0])
+            print '%s %s\t %s %s' % (get_time_str(e[0]), e[1], e[2],
+                                     self.ct_prefix+e[3])
 
 
 def signal_handler(signal_num, frame):
