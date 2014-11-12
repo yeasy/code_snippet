@@ -13,27 +13,34 @@ import threading
 import time
 import urllib2
 
-headers_pool=[
-    {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'},
-    {'User-Agent':'Mozilla/5.0 (compatible;MSIE 9.0; Windows NT 6.1; Trident/5.0)'},
-    {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US;) AppleWebKit/534.50(KHTML, like Gecko) Version/5.1 Safari/534.50'}
+
+headers_pool = [
+    {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; \
+                   rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'},
+    {'User-Agent': 'Mozilla/5.0 (compatible;MSIE 9.0; Windows NT 6.1; \
+                   Trident/5.0)'},
+    {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US;) '
+                   'AppleWebKit/534.50(KHTML, like Gecko) Version/5.1; \
+                   Safari/534.50'}
 ]
 
 DEFAULT_BOARD = 'couponslife'
-DEFAULT_KEYWORD = ".*" # The keyword you want to track
-DEFAULT_URL = "http://www.newsmth.net/bbsdoc.php?board=%s&ftype=6" % DEFAULT_BOARD
-DEFAULT_PREFIX = "http://www.newsmth.net/bbstcon.php?board=%s&gid=" % DEFAULT_BOARD
+DEFAULT_KEYWORD = ".*"
+DEFAULT_URL = "http://www.newsmth.net/bbsdoc.php?board=%s&ftype=6" % \
+              DEFAULT_BOARD
+DEFAULT_PREFIX = "http://www.newsmth.net/bbstcon.php?board=%s&gid=" % \
+                 DEFAULT_BOARD
 
 
-def get_time_str(ticks=None, format='%H:%M:%S'):
+def get_time_str(ticks=None, str_format='%H:%M:%S'):
     """
     Get the time string of given ticks or now
     :param ticks: ticks to convert
-    :param format: Output based on the format
+    :param str_format: Output based on the str_format
     :return:
     """
     t = ticks or time.time()
-    return time.strftime(format, time.localtime(t))
+    return time.strftime(str_format, time.localtime(t))
 
 
 class BoardWatcher(threading.Thread, object):
@@ -43,32 +50,34 @@ class BoardWatcher(threading.Thread, object):
     Multiprocessing.Process, but now it seems not necessary.
     """
 
-    def __init__(self, board_name=DEFAULT_BOARD, keyword=DEFAULT_KEYWORD):
+    def __init__(self, board_name=DEFAULT_BOARD, title_keyword=DEFAULT_KEYWORD):
         threading.Thread.__init__(self)
         self.setDaemon(True)
         self.board = board_name
-        self.keyword = keyword
+        self.keyword = title_keyword
         self.url = DEFAULT_URL.replace(DEFAULT_BOARD, self.board)
         self.ct_prefix = DEFAULT_PREFIX.replace(DEFAULT_BOARD, self.board)
         self.coding = sys.getfilesystemencoding()
 
     def run(self):
-        print 'board=%s, keyword=%s' %(self.board, self.keyword)
-        print "###### start at ", get_time_str(format='%Y-%m-%d %H:%M:%S')
+        print 'board=%s, keyword=%s' % (self.board, self.keyword)
+        print "###### start at ", get_time_str(str_format='%Y-%m-%d %H:%M:%S')
         entries_old = []
         while True:
             entries_new = self.get_board()
             if not entries_new:
                 continue
             old_title_list = set(map(lambda x: x[3], entries_old))
-            hit_entries = filter(lambda x: x[3] not in old_title_list, entries_new)
+            hit_entries = filter(lambda x: x[3] not in old_title_list,
+                                 entries_new)
             entries_old = entries_new
             self.print_out(hit_entries)
             time.sleep(random.uniform(1, 7))
 
     def get_board(self):
         """
-        Return articles collection on board, in format of [[gid,id,ts,title],...]
+        Return articles collection on board,
+        in format of [[gid,id,ts,title],...]
         :return: article list or []
         """
         if not self.board:
@@ -86,7 +95,7 @@ class BoardWatcher(threading.Thread, object):
             gid, uid, ts, title = f[1], f[2], f[4], f[5]
             title, uid = title.strip("' "), uid.strip("' ")
             #print [gid,id,ts,title]
-            if uid != 'deliver' and now - int(ts) < 3600: # only care recent hour
+            if uid != 'deliver' and now - int(ts) < 3600:  # only in recent hour
                 if keyword and re.search(keyword, e[3]):
                     result.append([gid, uid, ts, title])
         return result
@@ -113,9 +122,9 @@ class BoardWatcher(threading.Thread, object):
         :return:
         """
         for e in entries:
-            print '%s %s\t \t %s %s' \
-                  % (get_time_str(int(e[2])),
-                                       e[3], e[1], "URL="+self.ct_prefix+e[0])
+            print '%s %s\t \t %s %s' % (get_time_str(int(e[2])), e[3], e[1],
+                                        "URL="+self.ct_prefix+e[0])
+
 
 def signal_handler(signal_num, frame):
     print 'You pressed Ctrl+C!'
