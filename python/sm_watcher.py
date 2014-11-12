@@ -7,6 +7,7 @@
 
 import random
 import re
+import signal
 import sys
 import threading
 import time
@@ -100,7 +101,7 @@ class BoardWatcher(threading.Thread, object):
         headers = headers_pool[random.randint(0, len(headers_pool)-1)]
         try:
             req = urllib2.Request(url=self.url, headers=headers)
-            response = urllib2.urlopen(req)
+            response = urllib2.urlopen(req, timeout=5)
             return response.read()
         except urllib2.URLError:
             return None
@@ -116,12 +117,20 @@ class BoardWatcher(threading.Thread, object):
                   % (get_time_str(int(e[2])),
                                        e[3], e[1], "URL="+self.ct_prefix+e[0])
 
+def signal_handler(signal_num, frame):
+    print 'You pressed Ctrl+C!'
+    sys.exit(0)
+
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         board, keyword = DEFAULT_BOARD, DEFAULT_KEYWORD
     else:
         board, keyword = sys.argv[1], sys.argv[2]
 
+    signal.signal(signal.SIGINT, signal_handler)
+
     p = BoardWatcher(board, keyword)
     p.start()
-    p.join()
+
+    while True:
+        time.sleep(1)
