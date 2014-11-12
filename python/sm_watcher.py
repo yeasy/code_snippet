@@ -8,10 +8,9 @@
 import random
 import re
 import sys
+import threading
 import time
 import urllib2
-
-
 
 headers_pool=[
     {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'},
@@ -36,22 +35,24 @@ def get_time_str(ticks=None, format='%H:%M:%S'):
     return time.strftime(format, time.localtime(t))
 
 
-class BoardWatcher(object):
+class BoardWatcher(threading.Thread, object):
     """
     Watcher for a given board, will keep printing new articles with keyword.
     This class is easily implemented based on Threading.Thread or
     Multiprocessing.Process, but now it seems not necessary.
     """
 
-    def __init__(self, board=DEFAULT_BOARD, keyword=DEFAULT_KEYWORD):
-        self.board = board
+    def __init__(self, board_name=DEFAULT_BOARD, keyword=DEFAULT_KEYWORD):
+        threading.Thread.__init__(self)
+        self.setDaemon(True)
+        self.board = board_name
         self.keyword = keyword
         self.url = DEFAULT_URL.replace(DEFAULT_BOARD, self.board)
         self.ct_prefix = DEFAULT_PREFIX.replace(DEFAULT_BOARD, self.board)
         self.coding = sys.getfilesystemencoding()
 
     def run(self):
-        print 'board=%s, keyword=%s' %(board, keyword)
+        print 'board=%s, keyword=%s' %(self.board, self.keyword)
         print "###### start at ", get_time_str(format='%Y-%m-%d %H:%M:%S')
         entries_old = []
         while True:
@@ -112,7 +113,7 @@ class BoardWatcher(object):
         """
         for e in entries:
             print '%s %s\t \t %s %s' \
-                  %( get_time_str(int(e[2])),
+                  % (get_time_str(int(e[2])),
                                        e[3], e[1], "URL="+self.ct_prefix+e[0])
 
 if __name__ == "__main__":
@@ -121,4 +122,6 @@ if __name__ == "__main__":
     else:
         board, keyword = sys.argv[1], sys.argv[2]
 
-    BoardWatcher(board, keyword).run()
+    p = BoardWatcher(board, keyword)
+    p.start()
+    p.join()
