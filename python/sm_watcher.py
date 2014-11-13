@@ -62,16 +62,16 @@ class BoardWatcher(threading.Thread, object):
     def run(self):
         print 'board=%s, keyword=%s' % (self.board, self.keyword)
         print "###### start at ", get_time_str(str_format='%Y-%m-%d %H:%M:%S')
-        latest_time = 0
+        last_gid = 0
         while True:
             entries_new = self.get_board()
             if not entries_new:
                 continue
-            entries_new.sort(key=lambda x: x[0])
-            hit_entries = filter(lambda x: x[0] > latest_time,
+            entries_new.sort(key=lambda x: x[3])  # based on gid
+            hit_entries = filter(lambda x: x[3] > last_gid,
                                  entries_new)
-            if latest_time < entries_new[-1][0]:
-                latest_time = entries_new[-1][0]
+            if last_gid < entries_new[-1][3]:
+                last_gid = entries_new[-1][3]
             self.print_out(hit_entries)
             time.sleep(random.uniform(1, 7))
 
@@ -95,9 +95,8 @@ class BoardWatcher(threading.Thread, object):
             f = e.split(',')
             ts, title, uid, gid = int(f[4]), f[5], f[2], f[1]
             title, uid = title.strip("' "), uid.strip("' ")
-            #print [gid,id,ts,title]
             if uid != 'deliver' and now - ts < 3600:  # only in recent hour
-                if keyword and re.search(keyword, e[3]):
+                if self.keyword and re.search(self.keyword, title):
                     result.append([ts, title, uid, gid])
         return result
 
