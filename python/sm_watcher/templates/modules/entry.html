@@ -1,0 +1,15 @@
+<div class="entry">
+    <tr>
+        <td>
+            {{entry.get('ts', '')}}
+        </td>
+        <td>
+            <a href="{{entry.get('url', '')}}">
+                {{ entry["title"] }}
+            </a>
+        </td>
+        <td>
+            {{entry.get('user_name', '')}}
+        </td>
+    </tr>
+</div>
