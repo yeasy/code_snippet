@@ -85,7 +85,7 @@ class BoardWatcher(threading.Thread, object):
                                      entries_new)
                 if last_gid < entries_new[-1][3]:
                     last_gid = entries_new[-1][3]
-                self.print_out(hit_entries)
+                #self.print_out(hit_entries)
                 if self.to_db:
                     self.save_out(hit_entries)
             time.sleep(random.uniform(2, 10))
@@ -152,8 +152,8 @@ class BoardWatcher(threading.Thread, object):
         for e in entries:
             e_d = {'ts': get_time_str(e[0]), 'title': e[1], 'user_name': e[2],
                    'url': self.ct_prefix+e[3]}
-            db.hmset('newsmth/'+e[3], e_d)
-            db.expire('newsmth/'+e[3], 7200)
+            db.hmset('newsmth/'+self.board+'/'+e[3], e_d)
+            db.expire('newsmth/'+self.board+'/'+e[3], 7200)
 
 
 def signal_handler(signal_num, frame):

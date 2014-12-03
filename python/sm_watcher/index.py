@@ -49,11 +49,14 @@ class Application(tornado.web.Application):
 
 class IndexHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render("index.html")
+        self.render("index.html", ws_url='ws://o4bs.com:9000/ws')
 
 class ShowEntryModule(tornado.web.UIModule):
-    def render(self, entry):
-        return self.render_string('modules/entry.html', entry=entry)
+    def render(self):
+        return self.render_string('modules/entries.html')
+
+    def javascript_files(self):
+        return "scripts/entries.js"
 
 class WSHandler(tornado.websocket.WebSocketHandler):
     def open(self):
@@ -78,7 +81,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 
 class EntryModule(tornado.web.UIModule):
     def render(self, entry):
-        return self.render_string('modules/entry.html.html', entry=entry)
+        return self.render_string('modules/entries.html.html', entry=entry)
 
 if __name__ == "__main__":
     tornado.options.parse_command_line()
