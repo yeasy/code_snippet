@@ -76,12 +76,12 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 
     def send_entries(self):
         entries = [db.hgetall(name) for name in db.keys()]
-        entries.sort(key=lambda x: x['url'], reverse=True)
+        entries.sort(key=lambda x: x['ts'], reverse=True) # show latest first
         self.write_message(json.dumps(entries))
 
 class EntryModule(tornado.web.UIModule):
     def render(self, entry):
-        return self.render_string('modules/entries.html.html', entry=entry)
+        return self.render_string('modules/entries.html', entry=entry)
 
 if __name__ == "__main__":
     tornado.options.parse_command_line()
