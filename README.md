@@ -30,6 +30,9 @@ Connect to network interface and forward ethernet packets between them bidirecti
 ##save\_all\_images
 Save all local Docker images into tar.gz files.
 
+##restore\_images
+This script will load into the tar.gz files as images.
+
 ##getIP
 Some scripts to get local ip address of the network interfaces.
 
