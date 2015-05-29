@@ -34,6 +34,7 @@ DEFAULT_PREFIX = "http://www.newsmth.net/bbstcon.php?board=%s&gid=" % \
 
 pool = redis.ConnectionPool(host='localhost', port=6379, db=2)
 db = redis.StrictRedis(connection_pool=pool)
+DB_EXPIRE=3600*3 # db will expire after 3 hours
 
 def get_time_str(ticks=None, str_format='%H:%M:%S'):
     """
@@ -76,7 +77,7 @@ class BoardWatcher(threading.Thread, object):
             now = datetime.datetime.now()
             entries_new = []
             if datetime.time(01, 00) <= now.time() <= datetime.time(05, 55):
-                time.sleep(30)
+                time.sleep(300)
             else:
                 entries_new = self.get_board()
             if entries_new:
@@ -153,7 +154,7 @@ class BoardWatcher(threading.Thread, object):
             e_d = {'ts': get_time_str(e[0]), 'title': e[1], 'user_name': e[2],
                    'url': self.ct_prefix+e[3]}
             db.hmset('newsmth/'+self.board+'/'+e[3], e_d)
-            db.expire('newsmth/'+self.board+'/'+e[3], 7200)
+            db.expire('newsmth/'+self.board+'/'+e[3], DB_EXPIRE)
 
 
 def signal_handler(signal_num, frame):
@@ -161,9 +162,10 @@ def signal_handler(signal_num, frame):
     sys.exit(0)
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        board, keyword = DEFAULT_BOARD, DEFAULT_KEYWORD
-    else:
+    board, keyword = DEFAULT_BOARD, DEFAULT_KEYWORD
+    if len(sys.argv) == 2:
+        board= DEFAULT_BOARD
+    elif len(sys.argv) == 3:
         board, keyword = sys.argv[1], sys.argv[2]
 
     signal.signal(signal.SIGINT, signal_handler)
