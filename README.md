@@ -27,6 +27,9 @@ Test two containers connecting through OpenvSwitch with iperf
 ##ether\_bridge
 Connect to network interface and forward ethernet packets between them bidirectionally, supporting options.
 
+##save\_all\_images
+Save all local Docker images into tar.gz files.
+
 ##getIP
 Some scripts to get local ip address of the network interfaces.
 
