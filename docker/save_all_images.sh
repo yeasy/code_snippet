@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # This script will save all your local Docker images as tar.gz files.
 
 echo "Checking your images"
