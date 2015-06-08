@@ -60,6 +60,8 @@ Simple codes to show how to use python libraries, e.g., regrex, encoding.
 Demo the usage of AMQP by the kombu and pika.
 ### concurrency
 Some scripts on concurrency programming, such as threading, eventlet...
+### gitbook\_gen
+Generate an initialized gitbook project based on the given source code path.
 ###httpserver
 A simple webserver by python, which tracks request number of each visitor's IP address.
 ###mqtt
