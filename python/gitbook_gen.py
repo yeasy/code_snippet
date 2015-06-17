@@ -13,12 +13,12 @@ import sys
 ROOT_DIR = os.getcwd()
 RESULT_DIR= ROOT_DIR+os.sep+'outline_dir'
 
-def create_file(file_path, content):
+def create_file(file_path, content, forced=False):
     """
-    Create a file at the path, and write down the content.
-    If file already exists, then do nothing.
+    Create a file at the path, and write into the content.
+    If not forced, when file already exists, then do nothing.
     """
-    if os.path.isfile(file_path):
+    if os.path.isfile(file_path) and not forced:
         print "%s already exists, stop writing content=%s" % (file_path, content)
         return
     with open(file_path, 'w') as f:
@@ -43,7 +43,7 @@ def init_gb_dir(dirname, title):
     """
     if not os.path.exists(dirname):
         os.makedirs(dirname)
-    create_file(dirname+os.sep+'README.md', '')
+    create_file(dirname+os.sep+'README.md', '', forced=True)
 
 def refine_dirname(dirname):
     """
@@ -72,7 +72,7 @@ def process_dir(rootDir, level=1):
         else:
             if not os.path.exists(RESULT_DIR+os.sep+path):
                 os.makedirs(RESULT_DIR+os.sep+path)
-            create_file(RESULT_DIR+os.sep+path+os.sep+'README.md', '#'*level+' '+e)
+            create_file(RESULT_DIR+os.sep+path+os.sep+'README.md', '#'*level+' '+e, forced=True)
             line = '* [%s](%s/README.md)' % (e, path.replace('\\','/'))
         append_summary(' '*3*(level-1)+line)
         process_dir(path, level+1)
