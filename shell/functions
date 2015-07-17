@@ -1,0 +1,92 @@
+# Some useful functions for shell
+# yeasy@github
+#
+
+
+# colorfully output string
+echo_r () {
+    [ $# -ne 1 ] && return 0
+    echo -e "\033[31m$1\033[0m"
+}
+echo_g () {
+    [ $# -ne 1 ] && return 0
+    echo -e "\033[32m$1\033[0m"
+}
+echo_y () {
+    [ $# -ne 1 ] && return 0
+    echo -e "\033[33m$1\033[0m"
+}
+echo_b () {
+    [ $# -ne 1 ] && return 0
+    echo -e "\033[34m$1\033[0m"
+}
+
+# check if a command existed
+command_exists() {
+	command -v "$@" > /dev/null 2>&1
+}
+
+# perform some very rudimentary platform detection
+os_detect () {
+	lsb_dist=''
+	if command_exists lsb_release; then
+		lsb_dist="$(lsb_release -si)"
+	fi
+	if [ -z "$lsb_dist" ] && [ -r /etc/lsb-release ]; then
+		lsb_dist="$(. /etc/lsb-release && echo "$DISTRIB_ID")"
+	fi
+	if [ -z "$lsb_dist" ] && [ -r /etc/debian_version ]; then
+		lsb_dist='debian'
+	fi
+	if [ -z "$lsb_dist" ] && [ -r /etc/fedora-release ]; then
+		lsb_dist='fedora'
+	fi
+	if [ -z "$lsb_dist" ] && [ -r /etc/centos-release ]; then
+		lsb_dist='centos'
+	fi
+	if [ -z "$lsb_dist" ] && [ -r /etc/os-release ]; then
+		lsb_dist="$(. /etc/os-release && echo "$ID")"
+	fi
+
+	lsb_dist="$(echo "$lsb_dist" | tr '[:upper:]' '[:lower:]')"
+	case "$lsb_dist" in
+		amzn|fedora|centos)
+			if [ "$lsb_dist" = 'amzn' ]; then
+				(
+					set -x
+					echo "amzn"
+				)
+			else
+				(
+					set -x
+					echo "fedora|centos"
+				)
+			fi
+			exit 0
+			;;
+
+		'opensuse project'|opensuse|'suse linux'|sled)
+			(
+				set -x
+				echo "opensusue"
+			)
+			exit 0
+			;;
+
+		ubuntu|debian|linuxmint|'elementary os'|kali)
+			export DEBIAN_FRONTEND=noninteractive
+
+            echo "ubuntu|debian"
+		
+			exit 0
+			;;
+
+		gentoo)
+			(
+				set -x
+                echo "gentoo"
+			)
+			exit 0
+			;;
+	esac
+}
