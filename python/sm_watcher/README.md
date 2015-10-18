@@ -1,5 +1,3 @@
-A realtime smart web watcher..
+A realtime smart web watcher with keyword filting.
 
-Currently it support every board of newsmth.net.
-
-See [o4bs.com:9000](http://o4bs.com:9000) for the demo.
+Currently it supports every board of newsmth.net.
