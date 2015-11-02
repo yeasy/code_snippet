@@ -4,6 +4,8 @@ This script will generate a gitbook projects based on the given dir.
 The generated dir contains the same structure and have the necessary markdown files.
 Output will can be redirected as the SUMMARY.md.
 
+Usage: python gitbook_gen source_code_dir
+
 Author: yeasy@github.com
 """
 
