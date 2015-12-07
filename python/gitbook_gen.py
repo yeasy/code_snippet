@@ -98,5 +98,5 @@ if __name__ == '__main__':
             os.chdir(d)
             process_dir('.')
     else:
-        print "Put your path as parameters"
+        print "Put the input path(s) as parameters"
 
