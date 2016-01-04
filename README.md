@@ -21,6 +21,9 @@ Get overall cpu utilization at linux platform.
 
 ##Docker
 Some docker related scripts and tools.
+###docker\_cleanup
+Do some cleanup work on Docker Host, e.g., removing stopped containers and untagged images.
+
 ###ovs\_perf
 Test two containers connecting through OpenvSwitch with iperf
 
