@@ -17,10 +17,19 @@ else
     exit 1
 fi
 
-echo "Delete all stopped containers..."
-docker rm $(docker ps -a -q)
-echo "Delete all stopped containers...Done"
 
-echo "Delete all untagged images"
-docker rmi $(docker images -q -f dangling=true)
-echo "Delete all untagged images...Done"
+
+# Cleanup exited/dead containers
+EXITED_CONTAINERS="`docker ps -a -q -f status=exited -f status=dead | xargs echo`"
+if [ "$EXITED_CONTAINERS" != "" ]; then
+	echo "Delete all stopped containers..."
+	docker rm -v $EXITED_CONTAINERS
+	echo "Delete all stopped containers...Done"
+fi
+
+UNTAGGED_IMAGES="`docker images -q -f dangling=true | xargs echo`"
+if [ "$UNTAGGED_IMAGES" != "" ]; then
+	echo "Delete all untagged images"
+	docker rmi $UNTAGGED_IMAGES
+	echo "Delete all untagged images...Done"
+fi
