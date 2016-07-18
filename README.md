@@ -104,3 +104,10 @@ A much safer rm script, which can automatically backup removed files, in case de
 This script will show all ip address inside each network namespace. If give a parameter, then it will show the network namespace containing the key. This is useful for openstack debugging.
 ### service
 Example of a system service script in Debian/Ubuntu system, supporting running complicated command with arbitrary parameters.
+
+### sysctl.conf
+Optimized configuration for /etc/sysctl.conf.
+
+### limits.conf
+Optimized configuration for /etc/security/limits.conf.
+
