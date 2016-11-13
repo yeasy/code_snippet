@@ -81,4 +81,6 @@ if __name__ == '__main__':
             else:  # duplicated content, we're checking too quick
                 next_wait = random.randint(10, 60)
                 check_interval += next_wait
+                print('Get duplicated content')
+                print('next interval = {}'.format(check_interval))
                 time.sleep(next_wait)
