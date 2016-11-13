@@ -13,9 +13,10 @@ import threading
 import time
 import datetime
 import pickle
+import requests
+
 from bs4 import BeautifulSoup
 
-import requests
 
 headers_pool = [
     {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US;'

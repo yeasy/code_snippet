@@ -1,17 +1,25 @@
 # sm_watcher
 
-A realtime smart web watcher with keyword filting.
+A real-time smart web watcher with keyword filting.
 
-Currently it supports the board of newsmth.net.
-
+Currently it supports the boards of newsmth.net.
 
 ## Run
 
-Then
+First, install all required dependencies.
 
-```py
-$ python sm_watcher.py
+```sh
+$ pip install -r requirements.txt
+```
+
+Then start the watcher
+```sh
+$ python sm_watcher.py &
+```
+
+And the web server.
+```sh
 $ python index.py
 ```
 
-Then open `http://localhost:9000`.
+Now open `http://localhost:9000`, the result will be shown and updated in real-time, enjoy!
