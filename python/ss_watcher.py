@@ -15,6 +15,7 @@ headers = {
     'charset':'utf8'
 }
 
+ISOTIMEFORMAT="%Y-%m-%d %X"
 
 def get_ss(url):
     """Get ss list from given url
@@ -54,7 +55,6 @@ def update_cow(ss_list):
     for ss in ss_list:
         f_rc.write('proxy = {}\n'.format(ss))
     os.system('killall -9 cow')
-    print('Update!')
 
 
 if __name__ == '__main__':
@@ -62,17 +62,21 @@ if __name__ == '__main__':
         print('should input an url')
         exit()
     else:
+        url = sys.argv[1]
         ss_list_old = []
         check_interval = 300  # how many seconds wait for check, auto-adjust
+        print("Will fetch info from {}".format(url))
         while True:
-            ss_list = get_ss(sys.argv[1])
+            ss_list = get_ss(url)
             if ss_list and ss_list != ss_list_old: # find new, reduce interval
                 print('Get new ss list')
                 print('\n'.join(ss_list))
-                print('next interval = {}'.format(check_interval))
                 update_cow(ss_list)
                 ss_list_old = ss_list
                 check_interval -= random.randint(0, 10)
+                print('{}: Update'.format(time.strftime(ISOTIMEFORMAT,
+                                                         time.localtime() )))
+                print('next interval = {}'.format(check_interval))
                 time.sleep(check_interval)
             else:  # duplicated content, we're checking too quick
                 next_wait = random.randint(10, 60)
