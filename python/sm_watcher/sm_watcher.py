@@ -7,22 +7,28 @@
 
 import random
 import re
-import redis
 import signal
 import sys
 import threading
 import time
-import urllib2
 import datetime
+import pickle
+from bs4 import BeautifulSoup
+
+import requests
 
 headers_pool = [
-    {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; \
-                   rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'},
-    {'User-Agent': 'Mozilla/5.0 (compatible;MSIE 9.0; Windows NT 6.1; \
-                   Trident/5.0)'},
+    {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US;'
+                   'rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'},
+    {'User-Agent': 'Mozilla/5.0 (compatible;MSIE 9.0; Windows NT 6.1;'
+                   'Trident/5.0)'},
     {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US;) '
-                   'AppleWebKit/534.50(KHTML, like Gecko) Version/5.1; \
-                   Safari/534.50'}
+                   'AppleWebKit/534.50(KHTML, like Gecko) Version/5.1;'
+                   'Safari/534.50'},
+    {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
+                   'AppleWebKit/537.36 (KHTML, like Gecko) '
+                   'Chrome/39.0.2171.95 Safari/537.36',
+     }
 ]
 
 DEFAULT_BOARD = 'CouponsLife'
@@ -32,9 +38,8 @@ DEFAULT_URL = "http://www.newsmth.net/bbsdoc.php?board=%s&ftype=6" % \
 DEFAULT_PREFIX = "http://www.newsmth.net/bbstcon.php?board=%s&gid=" % \
                  DEFAULT_BOARD
 
-pool = redis.ConnectionPool(host='localhost', port=6379, db=2)
-db = redis.StrictRedis(connection_pool=pool)
-DB_EXPIRE=3600*3 # db will expire after 3 hours
+DB_FILE='/tmp/sm_watcher.data'
+
 
 def get_time_str(ticks=None, str_format='%H:%M:%S'):
     """
@@ -61,104 +66,134 @@ class BoardWatcher(threading.Thread, object):
         self.keyword = title_keyword
         self.url = DEFAULT_URL.replace(DEFAULT_BOARD, self.board)
         self.ct_prefix = DEFAULT_PREFIX.replace(DEFAULT_BOARD, self.board)
-        self.coding = sys.getfilesystemencoding()
-        self.to_db = True
-        try:
-            db.set('test', 'test')
-            db.delete('test')
-        except redis.ConnectionError:
-            self.to_db = False
+
+        self.max_items = 20
+        self.db_file = DB_FILE
+        self.db = {}
 
     def run(self):
-        print 'board=%s, keyword=%s' % (self.board, self.keyword)
-        print "###### start at ", get_time_str(str_format='%Y-%m-%d %H:%M:%S')
+        print('board=%s, keyword=%s' % (self.board, self.keyword))
+        print("###### start at ", get_time_str(str_format='%Y-%m-%d %H:%M:%S'))
         last_gid = 0
         while True:
             now = datetime.datetime.now()
             entries_new = []
-            if datetime.time(01, 00) <= now.time() <= datetime.time(05, 55):
+            if datetime.time(1, 0) <= now.time() <= datetime.time(5, 55):
                 time.sleep(300)
             else:
                 entries_new = self.get_board()
             if entries_new:
-                entries_new.sort(key=lambda x: x[3])  # based on gid
-                hit_entries = filter(lambda x: x[3] > last_gid,
-                                     entries_new)
-                if last_gid < entries_new[-1][3]:
-                    last_gid = entries_new[-1][3]
-                #self.print_out(hit_entries)
-                if self.to_db:
-                    self.save_out(hit_entries)
+                print('Get new entries')
+                self.db.update(entries_new)
+                gids = sorted(self.db.keys())
+                if len(gids) > self.max_items:
+                    num_remove = len(gids) - self.max_items
+                    for gid in gids[:num_remove]:
+                        del self.db[gid]
+                self.print_out()
+                self.save_out()
             time.sleep(random.uniform(2, 10))
 
     def get_board(self):
-        """
-        Return articles collection on board,
-        in format of [[gid,id,ts,title],...]
-        :return: article list or []
+        """ Get articles collection on board.
+
+        Currently we only get the content on latest page
+
+        :return: {
+        'xxx': {'gid':xxx,
+        'uid': uuu,
+        'ts': ttt,
+        'title': yyy
+        },
+        ,...} or {}
         """
         if not self.board:
             return
-        now = time.time()
-        result = []
-        pat = re.compile(u"c.o\(.*?\);", re.UNICODE)
         page = self.get_page()
         if not page:
             return []
-        content = page.decode('gb18030', 'ignore')
-        entries = re.findall(pat, content)
-        for e in entries:
-            f = e.split(',')
-            ts, title, uid, gid = int(f[4]), f[5], f[2], f[1]
-            title, uid = title.strip("' "), uid.strip("' ")
-            if uid != 'deliver' and uid != 'SYSOP' and now - ts < 7200:  # only
-            #  in recent two hours
-                if self.keyword and re.search(self.keyword, title):
-                    result.append([ts, title, uid, gid])
-        return result
+        else:
+            return self.parse(page)
 
     def get_page(self):
-        """
-        Get the page content of given url.
-        :return: page or None
+        """ Get the page content of given url.
+
+        :return: raw page content or None
         """
         if not self.url:
             return None
         headers = headers_pool[random.randint(0, len(headers_pool)-1)]
         try:
-            req = urllib2.Request(url=self.url, headers=headers)
-            response = urllib2.urlopen(req, timeout=5)
-            return response.read()
+            r = requests.get(self.url, headers=headers, timeout=10)
+            r.encoding = r.apparent_encoding
+
+            if r.status_code != requests.codes.ok:
+                print('return status code {} is not OK.'.format(r.status_code))
+                return None
+            return r.text
         except Exception:
             return None
 
-    def print_out(self, entries):
+    def parse(self, page):
+        """Parse a page into related content
+
+        :param page: raw html page
+        :return: {
+        'xxx': {'gid':xxx,
+        'uid': uuu,
+        'ts': ttt,
+        'title': yyy
+        },
+        ,...}
         """
-        Out put the interested entries: [ts, title, uid, gid ]
-        :param entries: Entries to print_out
-        :return:
-        """
+        now = time.time()
+        result = {}
+        pat = re.compile(u"c.o\(.*?\);", re.UNICODE)
+        soup = BeautifulSoup(page, "lxml")
+
+        content = soup.body.text
+        #content = content.decode('gb18030', 'ignore')
+        entries = re.findall(pat, content)
         for e in entries:
-            print '%s %s\t %s %s' % (get_time_str(e[0]), e[1], e[2],
-                                     self.ct_prefix+e[3])
-    def save_out(self, entries):
-        '''
-        Save the entries as a html page
-        :param entries:
-        :param dst:
+            f = e.split(',')
+            ts, title, uid, gid = int(f[4]), f[5], f[2], f[1]
+            title, uid = title.strip("' "), uid.strip("' ")
+            if uid != 'deliver' and uid != 'SYSOP' \
+                    and now - ts < 7200:  # only  in recent two hours
+                if self.keyword and re.search(self.keyword, title):
+                    result[gid] = {
+                        'gid': gid,
+                        'user_name': uid,
+                        'ts': get_time_str(ts),
+                        'title': title,
+                        'url': self.ct_prefix+gid,
+                    }
+        return result
+
+    def print_out(self):
+        """
+        Out put the interested entries: ts, title, uid, gid
         :return:
-        '''
-        if not entries:
+        """
+        for gid in self.db:
+            item = self.db[gid]
+            print('gid={}, ts={}, user_name={}, title={}'.format(
+                gid, item['ts'], item['user_name'], item['title']))
+
+    def save_out(self):
+        """Save into db
+
+        :return:
+        """
+        if not self.db or not self.db_file:
+            print('No db file to save out')
             return
-        for e in entries:
-            e_d = {'ts': get_time_str(e[0]), 'title': e[1], 'user_name': e[2],
-                   'url': self.ct_prefix+e[3]}
-            db.hmset('newsmth/'+self.board+'/'+e[3], e_d)
-            db.expire('newsmth/'+self.board+'/'+e[3], DB_EXPIRE)
+
+        pickle.dump(self.db, open(self.db_file, 'wb'))
 
 
 def signal_handler(signal_num, frame):
-    print 'You pressed Ctrl+C!'
+    print('You pressed Ctrl+C!')
     sys.exit(0)
 
 if __name__ == "__main__":

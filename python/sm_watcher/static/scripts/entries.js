@@ -1,5 +1,5 @@
 <script>
-    var ws = new WebSocket('ws://192.168.56.101:9000/ws');
+    var ws = new WebSocket('ws://localhost:9000/ws');
     var $message = $('#message');
     ws.onopen = function(){
       $message.attr("class", 'label label-success');

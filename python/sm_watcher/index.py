@@ -7,11 +7,17 @@ import tornado.options
 import os.path
 import json
 
+import pickle
+
 from tornado.options import define, options
 from tornado.ioloop import PeriodicCallback
-define("port", default=9000, help="run on the given port", type=int)
+from sm_watcher import DB_FILE
 
-from sm_watcher import db
+ws_server = 'localhost'
+ws_port = 9000
+
+define("port", default=ws_port, help="run on the given port", type=int)
+
 
 class Entries(object):
    callbacks = []
@@ -27,7 +33,7 @@ class Entries(object):
            callback(self.getEntries())
 
    def getEntries(self):
-       entries = [db.hgetall(name) for name in db.keys()]
+       entries = pickle.load(open(DB_FILE, 'rb')).values()
        entries.sort(key=lambda x: x['url'], reverse=True)
        return entries
 
@@ -49,7 +55,8 @@ class Application(tornado.web.Application):
 
 class IndexHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render("index.html", ws_url='ws://o4bs.com:9000/ws')
+        self.render("index.html", ws_url='ws://{}:{}/ws'.format(
+            ws_server, ws_port))
 
 class ShowEntryModule(tornado.web.UIModule):
     def render(self):
@@ -59,25 +66,28 @@ class ShowEntryModule(tornado.web.UIModule):
         return "scripts/entries.js"
 
 class WSHandler(tornado.websocket.WebSocketHandler):
+
     def open(self):
-        print 'open connection'
+        print('open connection')
         self.send_entries()
         self.callback = PeriodicCallback(self.send_entries, 5000)
         self.callback.start()
         #self.application.entries.register(self.callback)
 
     def on_close(self):
-        print 'close connection'
+        print('close connection')
         #self.application.entries.unregister(self.callback)
-        self.callback.stop()
+        if hasattr(self, 'callback'):
+            self.callback.stop()
 
     def on_message(self, message):
-        print 'message received %s' % message
+        print('message received %s' % message)
 
     def send_entries(self):
-        entries = [db.hgetall(name) for name in db.keys()]
-        entries.sort(key=lambda x: x['ts'], reverse=True) # show latest first
+        entries = list(pickle.load(open(DB_FILE, 'rb')).values())
+        entries.sort(key=lambda x: x['ts'], reverse=True)
         self.write_message(json.dumps(entries))
+
 
 class EntryModule(tornado.web.UIModule):
     def render(self, entry):
@@ -88,3 +98,4 @@ if __name__ == "__main__":
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
     tornado.ioloop.IOLoop.instance().start()
+    print('Now will listen on port {}'.format(ws_port))

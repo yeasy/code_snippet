@@ -12,7 +12,7 @@
 </div>
 
 <script>
-    var ws = new WebSocket('ws://o4bs.com:9000/ws');
+    var ws = new WebSocket('ws://localhost:9000/ws');
     var $message = $('#message');
     ws.onopen = function(){
       $message.attr("class", 'label label-success');
