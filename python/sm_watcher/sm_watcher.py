@@ -164,7 +164,7 @@ def signal_handler(signal_num, frame):
 if __name__ == "__main__":
     board, keyword = DEFAULT_BOARD, DEFAULT_KEYWORD
     if len(sys.argv) == 2:
-        board= DEFAULT_BOARD
+        board = DEFAULT_BOARD
     elif len(sys.argv) == 3:
         board, keyword = sys.argv[1], sys.argv[2]
 
