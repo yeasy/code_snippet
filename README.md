@@ -75,6 +75,8 @@ Calculate the cut prefixes by given two prefixes.
 Watch the specified file on remote, trigger action when there finds keyword in it.
 ### sm\_watcher
 Track (and filter) the board articles on the given url (newsmth now), and show them in a webpage in realtime (using jquery and HTML5 websocket).
+### ss\_watcher
+Auto fetch proxy information and update local config.
 ### wsgi
 A demo to show how to use wsgi and paste deployment to provide a web service. 
 Run `python server.py` and get the version information by visiting localhost:8080.
