@@ -25,7 +25,7 @@ headers_pool = [
                    Safari/534.50'}
 ]
 
-DEFAULT_BOARD = 'couponslife'
+DEFAULT_BOARD = 'CouponsLife'
 DEFAULT_KEYWORD = ".*"
 DEFAULT_URL = "http://www.newsmth.net/bbsdoc.php?board=%s&ftype=6" % \
               DEFAULT_BOARD
