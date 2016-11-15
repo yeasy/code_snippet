@@ -20,19 +20,19 @@ define("port", default=ws_port, help="run on the given port", type=int)
 
 
 class Entries(object):
-   callbacks = []
+    callbacks = []
 
-   def register(self, callback):
+    def register(self, callback):
        self.callbacks.append(callback)
 
-   def unregister(self, callback):
+    def unregister(self, callback):
        self.callbacks.remove(callback)
 
-   def notifyCallbacks(self):
+    def notifyCallbacks(self):
        for callback in self.callbacks:
            callback(self.getEntries())
 
-   def getEntries(self):
+    def getEntries(self):
        entries = pickle.load(open(DB_FILE, 'rb')).values()
        entries.sort(key=lambda x: x['url'], reverse=True)
        return entries
@@ -85,7 +85,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 
     def send_entries(self):
         entries = list(pickle.load(open(DB_FILE, 'rb')).values())
-        entries.sort(key=lambda x: x['ts'], reverse=True)
+        entries.sort(key=lambda x: x['gid'], reverse=True)
         self.write_message(json.dumps(entries))
 
 
