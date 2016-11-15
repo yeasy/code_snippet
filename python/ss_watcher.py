@@ -63,6 +63,8 @@ def wake_till(seconds):
     while True:
         if int(time.time()) < seconds:
             time.sleep(2)
+        else:
+            return
 
 
 if __name__ == '__main__':
