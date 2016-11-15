@@ -57,6 +57,14 @@ def update_cow(ss_list):
     os.system('killall -9 cow')
 
 
+def wake_till(seconds):
+    """Wake up till reach seconds
+    """
+    while True:
+        if int(time.time()) < seconds:
+            time.sleep(2)
+
+
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print('should input an url')
@@ -72,15 +80,18 @@ if __name__ == '__main__':
                 print('Get new ss list')
                 print('\n'.join(ss_list))
                 update_cow(ss_list)
+                print('{}: Update'.format(time.strftime(ISOTIMEFORMAT)))
                 ss_list_old = ss_list
                 check_interval -= random.randint(0, 10)
-                print('{}: Update'.format(time.strftime(ISOTIMEFORMAT,
-                                                         time.localtime() )))
-                print('next interval = {}'.format(check_interval))
-                time.sleep(check_interval)
+                print('Adjust next check interval = {}'.format(check_interval))
+                current_time = time.time()
+                next_seconds = int(current_time) + check_interval
+                print('next check time = {}'.format(time.ctime(next_seconds)))
+                wake_till(next_seconds)
+
             else:  # duplicated content, we're checking too quick
                 next_wait = random.randint(10, 60)
                 check_interval += next_wait
                 print('Get duplicated content')
-                print('next interval = {}'.format(check_interval))
+                print('Adjust next check interval = {}'.format(check_interval))
                 time.sleep(next_wait)
