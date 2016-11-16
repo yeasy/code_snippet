@@ -17,13 +17,20 @@ headers = {
 
 ISOTIMEFORMAT="%Y-%m-%d %X"
 
+
 def get_ss(url):
     """Get ss list from given url
 
     :param url:
     :return: list of ss addrs like ['ss://xxxxxxx','ss://yyyyy']
     """
-    r = requests.get(url, headers=headers, timeout=10)
+    while True:
+        try:
+            r = requests.get(url, headers=headers, timeout=10)
+        except Exception:
+            time.sleep(random.randint(2, 10))
+            continue
+        break
 
     if r.status_code != requests.codes.ok:
         print('return status code {} is not OK.'.format(r.status_code))
