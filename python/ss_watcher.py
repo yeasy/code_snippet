@@ -101,6 +101,8 @@ if __name__ == '__main__':
             else:  # duplicated content, we're checking too quick
                 next_wait = random.randint(10, 60)
                 check_interval += next_wait
+                if check_interval >= 3600:  # at most wait for an hour
+                    check_interval = 3600
                 print('Get duplicated content')
                 print('Adjust next check interval = {}'.format(check_interval))
                 time.sleep(next_wait)
