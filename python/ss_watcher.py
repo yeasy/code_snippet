@@ -14,6 +14,19 @@ headers = {
                   'Chrome/39.0.2171.95 Safari/537.36',
     'charset':'utf8'
 }
+headers_pool = [
+    {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US;'
+                   'rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'},
+    {'User-Agent': 'Mozilla/5.0 (compatible;MSIE 9.0; Windows NT 6.1;'
+                   'Trident/5.0)'},
+    {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US;) '
+                   'AppleWebKit/534.50(KHTML, like Gecko) Version/5.1;'
+                   'Safari/534.50'},
+    {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
+                   'AppleWebKit/537.36 (KHTML, like Gecko) '
+                   'Chrome/39.0.2171.95 Safari/537.36',
+     }
+]
 
 ISOTIMEFORMAT="%Y-%m-%d %X"
 
@@ -26,6 +39,7 @@ def get_ss(url):
     """
     while True:
         try:
+            headers = headers_pool[random.randint(0, len(headers_pool)-1)]
             r = requests.get(url, headers=headers, timeout=10)
         except Exception:
             time.sleep(random.randint(2, 10))
@@ -101,8 +115,8 @@ if __name__ == '__main__':
             else:  # duplicated content, we're checking too quick
                 next_wait = random.randint(10, 60)
                 check_interval += next_wait
-                if check_interval >= 3600:  # at most wait for an hour
-                    check_interval = 3600
+                if check_interval >= 7200:  # at most wait for an hour
+                    check_interval = random.randint(3600, 7200)
                 print('Get duplicated content')
                 print('Adjust next check interval = {}'.format(check_interval))
                 time.sleep(next_wait)
