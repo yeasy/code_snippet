@@ -5,8 +5,11 @@ from bs4 import BeautifulSoup
 import os
 import random
 import requests
+import shutil
 import sys
 import time
+
+
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
@@ -66,16 +69,18 @@ def get_ss(url):
 
 
 def update_cow(ss_list):
-    f_rc_bak = open(os.path.expanduser('~')+'/.cow/rc.bak','r').read()
-    f_rc = open(os.path.expanduser('~')+'/.cow/rc','w')
-    if not f_rc_bak or not f_rc:
-        print('Error to open rc_bak or rc files')
-        return
-    f_rc.write(f_rc_bak)
-    f_rc.write('# other ss proxies\n')
-    for ss in ss_list:
-        f_rc.write('proxy = {}\n'.format(ss))
-    os.system('killall -9 cow')
+    src = os.path.expanduser('~')+'/.cow/rc.bak'
+    dst = os.path.expanduser('~')+'/.cow/rc'
+    try:
+        shutil.copyfile(src, dst)
+        f_rc = open(dst, 'a')
+        f_rc.write('# other ss proxies\n')
+        for ss in ss_list:
+            f_rc.write('proxy = {}\n'.format(ss))
+        f_rc.close()
+        os.system('killall -9 cow')
+    except OSError:
+        print("Cannot copy file")
 
 
 def wake_till(seconds):
@@ -113,7 +118,7 @@ if __name__ == '__main__':
                 wake_till(next_seconds)
 
             else:  # duplicated content, we're checking too quick
-                next_wait = random.randint(10, 60)
+                next_wait = random.randint(100, 600)
                 check_interval += next_wait
                 if check_interval >= 7200:  # at most wait for an hour
                     check_interval = random.randint(3600, 7200)
