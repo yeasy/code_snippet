@@ -100,7 +100,7 @@ if __name__ == '__main__':
     else:
         url = sys.argv[1]
         ss_list_old = []
-        check_interval = 300  # how many seconds wait for check, auto-adjust
+        check_interval = 600  # how many seconds wait for check, auto-adjust
         print("Will fetch info from {}".format(url))
         while True:
             ss_list = get_ss(url)
@@ -110,7 +110,7 @@ if __name__ == '__main__':
                 update_cow(ss_list)
                 print('{}: Update'.format(time.strftime(ISOTIMEFORMAT)))
                 ss_list_old = ss_list
-                check_interval -= random.randint(0, 10)
+                check_interval -= random.randint(0, 100)
                 print('Adjust next check interval = {}'.format(check_interval))
                 current_time = time.time()
                 next_seconds = int(current_time) + check_interval
@@ -118,10 +118,10 @@ if __name__ == '__main__':
                 wake_till(next_seconds)
 
             else:  # duplicated content, we're checking too quick
-                next_wait = random.randint(100, 600)
+                next_wait = random.randint(300, 600)
                 check_interval += next_wait
-                if check_interval >= 7200:  # at most wait for an hour
-                    check_interval = random.randint(3600, 7200)
+                if check_interval >= 3600*3:  # at most wait for 3 hour
+                    check_interval = random.randint(3600*2, 3600*3)
                 print('Get duplicated content')
                 print('Adjust next check interval = {}'.format(check_interval))
                 time.sleep(next_wait)
