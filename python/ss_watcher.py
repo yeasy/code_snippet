@@ -88,7 +88,7 @@ def wake_till(seconds):
     """
     while True:
         if int(time.time()) < seconds:
-            time.sleep(2)
+            time.sleep(5)
         else:
             return
 
@@ -104,7 +104,11 @@ if __name__ == '__main__':
         print("Will fetch info from {}".format(url))
         while True:
             ss_list = get_ss(url)
-            if ss_list and ss_list != ss_list_old: # find new, reduce interval
+            if not ss_list:
+                print("Get invalid ss list, wait some time to retry")
+                time.sleep(random.randint(100,300))
+                continue
+            if ss_list != ss_list_old: # find new, reduce interval
                 print('Get new ss list')
                 print('\n'.join(ss_list))
                 update_cow(ss_list)
