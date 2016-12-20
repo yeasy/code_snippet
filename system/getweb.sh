@@ -4,41 +4,55 @@
 # Version: 0.3
 # Author: Baohua Yang@THU
 # Created: May 27, 2011
-# Updated: Aug 18, 2011
+# Updated: Dec 20, 2016
 # Usage:
-# getweb [-d save_dir] <website> 
-#   save_dir is current defaultly
+# getweb.sh [-d save_dir] WEBSITE_URL
+# save_dir is current path by default
 
 SAVE_DIR="$PWD" #defaultly save to current directory
-URL="www.google.com"
+URL=""
 AGENT="Mozilla/5.0"
-OPTION=""
-OPTION+=" -x" #Create a hierarchy of directories
-OPTION+=" -nH" #Disable generation of host-prefixed directories
-OPTION+=" -m" #Mirroring, turns on recursion and time-stamping, infinite recursion depth
-OPTION+=" -p" #Download media type files
-OPTION+=" -k" #Convert links locally
-OPTION+=" -c" #Continue downloading with previous files
-OPTION+=" -nv" #Turn off verbose
-OPTION+=" -np" #No try parent directory
-#OPTION+=" -L" #Follow relative links only
-OPTION+=" -t 3" #Try times
+
+OPTION="-e robots=off"  # Not tell a robot
+OPTION+=" -x" # Create a hierarchy of directories
+OPTION+=" -nH" # Disable generation of host-prefixed directories
+OPTION+=" -m" # Mirroring, turns on recursion and time-stamping, infinite recursion depth
+OPTION+=" -p" # Download media type files
+OPTION+=" -k" # Convert links locally
+OPTION+=" -c" # Continue downloading with previous files
+OPTION+=" -nv" # Turn off verbose
+OPTION+=" -np" # No try parent directory
+#OPTION+=" -L" # Follow relative links only
+OPTION+=" -t 3" # Try times
+OPTION+=" -U $AGENT"  # Set agent header
 #OPTION+=" --html-extension" #For dynamic pages
+
 #echo $OPTION
+
+command -v wget >/dev/null 2>&1 || { echo >&2 "wget is not installed. Please install it first."; exit 1; }
 
 while getopts d: opt
 do
     case "$opt" in
       d)  SAVE_DIR="$OPTARG"
           ;;
+      h)  echo "Usage: $0 [-d save_dir] WEBSITE_URL"
+      exit;;
       \?)
-      echo "Usage: $0 [-d save_dir] website_url"
+      echo "Usage: $0 [-d save_dir] WEBSITE_URL"
       exit;;
     esac
 done
 
-test ! -d $SAVE_DIR && mkdir $SAVE_DIR
-test ! -w $SAVE_DIR && echo "[Error]: Save directory isn't writeable." && exit 1
+test ! -d ${SAVE_DIR} && "save_dir ${SAVE_DIR} not exists, will create..." && mkdir $SAVE_DIR
+test ! -w ${SAVE_DIR} && echo "[Error]: Save directory isn't writeable, will exit." && exit 1
+OPTION+=" -P $SAVE_DIR"
+
 shift `expr $OPTIND - 1` && URL=$1
-wget -e robots=off $OPTION -U $AGENT -P $SAVE_DIR $URL
-echo "Done!"
+[ -z "$URL" ] && echo "URL is not given, will exit." && exit 1
+
+# Run wget cmd with options
+echo "=== Start getting the website $URL"
+wget $OPTION $URL
+
+echo "=== Done! The website is saved to ${SAVE_DIR}"
