@@ -9,7 +9,7 @@ This tool should never overwrite other files.
 
 Usage: python gitbook_gen [src_dir1] [src_dir2] ...
 
-The generated project will have name like `src_dir1_gitbook`, 'src_dir2_gitbook'
+The generated books will have names like `src_dir1_gitbook`, 'src_dir2_gitbook'
 
 Author: yeasy@github.com
 """
@@ -72,8 +72,8 @@ def has_pattern(path_name, patterns=IGNORES):
     def test_pattern(pattern):
         return fnmatch(path_name, pattern)
     result = filter(test_pattern, patterns)
-    print(path_name)
-    print(result)
+    # print(path_name)
+    # print(result)
     return len(result) > 0
 
 
@@ -92,6 +92,8 @@ def process_dir(root_dir, level=1):
     list_file = filter(lambda x: os.path.isfile(os.path.join(root_dir, x)) and
                                  not x.startswith('_'), valid_dirs)
     for e in list_dir:  # dirs
+        if has_pattern(e):
+            continue
         path = os.path.join(root_dir, e).replace('.' + os.sep, '')
         if level == 4:
             create_file(PROJECT + os.sep + path + '.md', '#' * level + ' ' + e)
@@ -105,6 +107,8 @@ def process_dir(root_dir, level=1):
         update_file(SUMMARY, ' ' * 4 * (level - 1) + line)
         process_dir(path, level+1)
     for e in list_file:  # files
+        if has_pattern(e):
+            continue
         name, suffix = os.path.splitext(e)  # test .py
         path = os.path.join(root_dir, name).replace('.' + os.sep, '') \
                + suffix.replace('.', '_')  # test\test_py
