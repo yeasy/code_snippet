@@ -70,7 +70,7 @@ def has_pattern(path_name, patterns=IGNORES):
     """
 
     def test_pattern(pattern):
-        return fnmatch(path_name, pattern)
+        return fnmatch(path_name.lower(), pattern)
     result = filter(test_pattern, patterns)
     # print(path_name)
     # print(result)
