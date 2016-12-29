@@ -44,9 +44,9 @@ do
     esac
 done
 
-test ! -d ${SAVE_DIR} && "save_dir ${SAVE_DIR} not exists, will create..." && mkdir $SAVE_DIR
-test ! -w ${SAVE_DIR} && echo "[Error]: Save directory isn't writeable, will exit." && exit 1
-OPTION+=" -P $SAVE_DIR"
+test ! -d ${SAVE_DIR} && echo "save_dir ${SAVE_DIR} not exists, will create it..." && mkdir -p ${SAVE_DIR} && echo "save_dir ${SAVE_DIR} is created"
+test ! -w ${SAVE_DIR} && echo "[Error]: save_dir isn't writeable, will exit." && exit 1
+OPTION+=" -P ${SAVE_DIR}"
 
 shift `expr $OPTIND - 1` && URL=$1
 [ -z "$URL" ] && echo "URL is not given, will exit." && exit 1
