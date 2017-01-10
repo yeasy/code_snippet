@@ -24,8 +24,8 @@ OPTION+=" -nv" # Turn off verbose
 OPTION+=" -np" # No try parent directory
 #OPTION+=" -L" # Follow relative links only
 OPTION+=" -t 3" # Try times
+#OPTION+=" -E" # For dynamic pages, will add html suffix for js/asp...
 OPTION+=" -U $AGENT"  # Set agent header
-#OPTION+=" --html-extension" #For dynamic pages
 
 #echo $OPTION
 
