@@ -32,9 +32,10 @@ generator_info = \
 
 
 def init_gitbook_dir(dir_path, title):
-    """ Initialized a gitbook dir.
+    """ Initialized a gitbook dir, including:
 
-     Init a README.md and a SUMMARY.md
+     * README.md
+     * SUMMARY.md
 
     :param dir_path: whole dir path
     :param title: project title
@@ -43,23 +44,24 @@ def init_gitbook_dir(dir_path, title):
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
     create_file(README,
-                "# {}\n\n{}".format(title, generator_info), forced=False)
-    create_file(SUMMARY, "# Summary\n\n* [Introduction](README.md)",
+                "# {}\n\n{}\n".format(title, generator_info), forced=False)
+    create_file(SUMMARY, "# Summary\n\n* [Introduction](README.md)\n",
                 forced=True)
 
 
 def refine_dirname(name):
-    """ Refine a dir name to make sure it's validate for processing.
+    """ Refine a structrual path as a valid name string
 
     e.g., ./yeasy_book/ --> yeasy_book
+    /tmp/a/b --> tmp_a_b
 
     :param name: directory name to refine
     :return: refined result
     """
-    name = name.replace('.' + os.sep, '')  # remove './'
-    if name.endswith('/') or name.endswith('\\'):
-        name = name[:-1]
-    return name
+    result = name.strip('./\\' + os.sep)  # tmp/a/b
+    result = result.replace('/', os.sep)  # tmp/a/b
+    result = result.replace('\\', os.sep)  # tmp/a/b
+    return result.replace(os.sep, '_')
 
 
 def has_pattern(path_name, patterns=IGNORE_DIRS):
@@ -72,7 +74,7 @@ def has_pattern(path_name, patterns=IGNORE_DIRS):
 
     def test_pattern(pattern):
         return fnmatch(path_name.lower(), pattern)
-    result = filter(test_pattern, patterns)
+    result = list(filter(test_pattern, patterns))
     if 'build/' in path_name:
         print(path_name)
         print(result)
@@ -88,23 +90,23 @@ def process_dir(root_dir, level=1):
     """
     if level > 4:  # do not process very deep dir
         return
-    valid_dirs = filter(lambda x: not x.startswith('.'), os.listdir(root_dir))
-    list_dir = filter(lambda x: os.path.isdir(os.path.join(root_dir, x)),
-                      valid_dirs)
-    list_file = filter(lambda x: os.path.isfile(os.path.join(root_dir, x)) and
-                                 not x.startswith('_'), valid_dirs)
+    valid_dirs = list(filter(lambda x: not x.startswith('.'), os.listdir(root_dir)))
+    list_dir = list(filter(lambda x: os.path.isdir(os.path.join(root_dir, x)),
+                      valid_dirs))
+    list_file = list(filter(lambda x: os.path.isfile(os.path.join(root_dir, x)) and
+                                not x.startswith('_'), valid_dirs))
     for e in list_dir:  # dirs
         if has_pattern(e, IGNORE_DIRS):
             continue
         path = os.path.join(root_dir, e).replace('.' + os.sep, '')
         if level == 4:
-            create_file(PROJECT + os.sep + path + '.md', '#' * level + ' ' + e)
+            create_file(PROJECT + os.sep + path + '.md', '#' * level + ' ' + e + ' 包\n')
             line = '* [%s](%s.md)' % (e, path.replace('\\', '/'))
         else:
             if not os.path.exists(PROJECT+os.sep+path):
                 os.makedirs(PROJECT + os.sep + path)
             create_file(PROJECT + os.sep + path + os.sep + 'README.md',
-                        '#' * level + ' ' + e, forced=False)
+                        '#' * level + ' ' + e + ' 包\n', forced=False)
             line = '* [%s](%s/README.md)' % (e, path.replace('\\', '/'))
         update_file(SUMMARY, ' ' * 4 * (level - 1) + line)
         process_dir(path, level+1)
@@ -113,13 +115,13 @@ def process_dir(root_dir, level=1):
             continue
         name, suffix = os.path.splitext(e)  # test .py
         path = os.path.join(root_dir, name).replace('.' + os.sep, '') \
-               + suffix.replace('.', '_')  # test\test_py
-        create_file(PROJECT + os.sep + path + '.md', '#' * level + ' ' + e)
+              + suffix.replace('.', '_')  # test\test_py
+        create_file(PROJECT + os.sep + path + '.md', '#' * level + ' ' + e + '\n')
         line = '* [%s](%s.md)' % (e, path.replace('\\', '/'))
         update_file(SUMMARY, ' ' * 4 * (level - 1) + line)
 
 
-def create_file(file_path, content, forced=False):
+def create_file(file_path, content='\n', forced=False):
     """ Create a file at the path, and write the content.
     If not forced, when file already exists, then do nothing.
 
@@ -133,7 +135,7 @@ def create_file(file_path, content, forced=False):
             file_path, content))
         return
     with open(file_path, 'w') as f:
-        f.write(content+'\n')
+        f.write(content)
 
 
 def update_file(file_path, content, append=True, debug=False):
@@ -163,10 +165,9 @@ if __name__ == '__main__':
             if not os.path.exists(d):
                 print("WARN: dir name {} does not exist".format(d))
                 continue
-            d = refine_dirname(d)
+            path_str = refine_dirname(d)
             PROJECT = ROOT_PATH + os.sep \
-                      + d.replace('/', '_').replace('\\', '_') \
-                      + '_gitbook'
+                     + path_str + '_gitbook'  # a_b_gitbook
             README = PROJECT + os.sep + 'README.md'
             SUMMARY = PROJECT + os.sep + 'SUMMARY.md'
             print("Will init the output dir={}".format(PROJECT))
