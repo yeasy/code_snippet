@@ -1,0 +1,23 @@
+{
+  "CN": "ca.example.com",
+  "names": [
+    {
+      "C":  "US",
+      "L":  "San Francisco",
+      "O":  "example.com",
+      "OU": "ca.example.com",
+      "ST": "California"
+    }
+  ],
+  "hosts": [
+    "example.com",
+    "www.example.com"
+  ],
+  "key": {
+    "algo": "ecdsa",
+    "size": 256
+  },
+  "ca": {
+    "expiry": "262800h"
+  }
+}
