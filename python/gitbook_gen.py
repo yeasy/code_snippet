@@ -23,7 +23,7 @@ ROOT_PATH = os.getcwd()
 PROJECT = ""
 README = "README.md"
 SUMMARY = "SUMMARY.md"
-IGNORE_DIRS = ['*build*', '*__pycache__*', '*vendor*', '*test*', '*mocks*',
+IGNORE_DIRS = ['*build*', '*__pycache__*', '*vendor*', '*test*', '*mock*',
         'docs/*']  # path with these patterns will be ignored
 IGNORE_FILES = ['*_test.*', '*.md', '*.png', '*.rst']  # path with these patterns will be ignored
 

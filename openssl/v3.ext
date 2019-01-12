@@ -1,0 +1,4 @@
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+subjectAltName= DNS:localhost, DNS:oci-lbr, DNS:clustertst02-bcsb-1, DNS:clustertst02-bcsb-2, DNS:clustertst02-bcsb-3, IP:127.0.0.1, IP:129.213.9.145, IP:129.213.62.129, IP:129.213.53.75, IP:129.213.51.73
