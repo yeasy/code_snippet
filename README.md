@@ -76,6 +76,9 @@ Generate an initialized gitbook project based on the given source code path.
 ### httpserver
 A simple webserver by python, which tracks request number of each visitor's IP address.
 
+### json_flatter
+Flat the structure of json files under given path.
+
 ### mqtt
 Demo the usage of MQTT.
 
