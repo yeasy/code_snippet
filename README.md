@@ -117,9 +117,6 @@ Useful shell scripts.
 ## [system](system)
 Some system related tools, such as init a fresh os.
 
-### getweb.sh
-Simple but powerful script, which can automatically download a website by URL and save it to local directory for offline reference.
-
 ### rm.sh
 A much safer rm script, which can automatically backup removed files, in case deleting useful data (beta version).
 
@@ -134,4 +131,11 @@ Optimized configuration for /etc/sysctl.conf.
 
 ### limits.conf
 Optimized configuration for /etc/security/limits.conf.
+
+## Web
+
+Website related.
+
+### getweb.sh
+Simple but powerful script, which can automatically download a website by URL and save it to local directory for offline reference.
 

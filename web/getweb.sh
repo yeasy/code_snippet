@@ -7,11 +7,10 @@
 # Updated: Dec 20, 2016
 # Usage:
 # getweb.sh [-d save_dir] WEBSITE_URL
-# save_dir is current path by default
 
-SAVE_DIR="$PWD" #defaultly save to current directory
+SAVE_DIR="$PWD/sync_website" #save to sync_website under the current directory
 URL=""
-AGENT="Mozilla/5.0"
+AGENT="Mozilla/6.0"
 
 OPTION="-e robots=off"  # Not tell a robot
 OPTION+=" -x" # Create a hierarchy of directories
