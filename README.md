@@ -46,6 +46,7 @@ Some golang examples
 Name | Description
 -- | --
 plugin | Demo how to use plugin to generate a .so file and then load it.
+grpc | Demo how to use gRPC with the go module.
 
 ## [programing](programing)
 Some simple tools to help programing more efficiently.
