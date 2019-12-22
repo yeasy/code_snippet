@@ -72,6 +72,7 @@ prefixCutter | Calculate the cut prefixes by given two prefixes.
 pull_agent.sh | Daemon agent to pull some content from remote host using scp, and do action after check changes.
 push_agent.sh | Daemon agent to push some msg to remote host file.
 remote_watcher | Watch the specified file on remote using scp, trigger action when there finds keyword in it.
+stat_parse | Parse the ifconfig results and get the pkts/bytes number.
 wsgi | A demo to show how to use wsgi and paste deployment to provide a web service. Run `python server.py` and get the version information by visiting localhost:8080.
 
 ## [shell](shell)
