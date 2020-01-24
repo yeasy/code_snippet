@@ -113,6 +113,7 @@ Name | Description
 -- | --
 getweb.sh | Simple but powerful script, which can automatically download a website by URL and save it to local directory for offline reference.
 httpserver | A simple webserver by python, which tracks request number of each visitor's IP address.
+https_server | A simple webserver by python, which enable tls, and allow server to check client's certificate.
 sm_watcher | Track (and filter) the board articles on the given url (newsmth now), and show them in a webpage in realtime (using jquery and HTML5 websocket).
 ss_watcher | Auto fetch proxy information and update local config.
 
