@@ -73,6 +73,7 @@ pull_agent.sh | Daemon agent to pull some content from remote host using scp, an
 push_agent.sh | Daemon agent to push some msg to remote host file.
 remote_watcher | Watch the specified file on remote using scp, trigger action when there finds keyword in it.
 stat_parse | Parse the ifconfig results and get the pkts/bytes number.
+tls_server | A simple tls server by python, which enable tls, and allow server to check client's certificate.
 wsgi | A demo to show how to use wsgi and paste deployment to provide a web service. Run `python server.py` and get the version information by visiting localhost:8080.
 
 ## [shell](shell)
@@ -113,7 +114,6 @@ Name | Description
 -- | --
 getweb.sh | Simple but powerful script, which can automatically download a website by URL and save it to local directory for offline reference.
 httpserver | A simple webserver by python, which tracks request number of each visitor's IP address.
-https_server | A simple webserver by python, which enable tls, and allow server to check client's certificate.
 sm_watcher | Track (and filter) the board articles on the given url (newsmth now), and show them in a webpage in realtime (using jquery and HTML5 websocket).
 ss_watcher | Auto fetch proxy information and update local config.
 
