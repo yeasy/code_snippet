@@ -12,7 +12,7 @@ import (
 
 const (
 	address     = "localhost:50051"
-	defaultName = "world"
+	defaultName = "client"
 )
 
 func main() {
@@ -35,5 +35,5 @@ func main() {
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
-	log.Printf("Greeting: %s", r.GetMessage())
+	log.Printf("Greeting from server: %s", r.GetMessage())
 }
