@@ -61,20 +61,20 @@ Simple codes to show how to use python libraries, e.g., regrex, encoding.
 
 Name | Description
 -- | --
-amqp | Demo the usage of AMQP by the kombu and pika.
-concurrency | Some scripts on concurrency programming, such as threading, eventlet...
-gitbook_gen | Generate an initialized gitbook project based on the given source code path.
-json | Example to show how to use json encoding/decoding in python.
-json_flatter | Flat the structure of json files under given path.
-mqtt | Demo the usage of MQTT.
-netlink | Test bidirectional communication between userspace and kernelspace, using low-level netlink APIs in the userspace, and libnl APIs in the kernelspace.
-prefixCutter | Calculate the cut prefixes by given two prefixes.
-pull_agent.sh | Daemon agent to pull some content from remote host using scp, and do action after check changes.
-push_agent.sh | Daemon agent to push some msg to remote host file.
-remote_watcher | Watch the specified file on remote using scp, trigger action when there finds keyword in it.
-stat_parse | Parse the ifconfig results and get the pkts/bytes number.
-tls_server | A simple tls server by python, which enable tls, and allow server to check client's certificate.
-wsgi | A demo to show how to use wsgi and paste deployment to provide a web service. Run `python server.py` and get the version information by visiting localhost:8080.
+[add_watermark](python/add_watermark.py) | Add repeated watermark to pdf file
+[amqp](python/amqp) | Demo the usage of AMQP by the kombu and pika.
+[concurrency](python/concurrency)  | Some scripts on concurrency programming, such as threading, eventlet...
+[gitbook_gen](python/gitbook_gen.py)  | Generate an initialized gitbook project based on the given source code path.
+[json](python/json)  | Example to show how to use json encoding/decoding in python.
+[json_flatter](python/json_flatter.py)  | Flat the structure of json files under given path.
+[mqtt](python/mqtt)  | Demo the usage of MQTT.
+[prefixCutter](python/prefixCutter.py)  | Calculate the cut prefixes by given two prefixes.
+[pull_agent](python/pull_agent.py)  | Daemon agent to pull some content from remote host using scp, and do action after check changes.
+[push_agent](python/push_agent.py)  | Daemon agent to push some msg to remote host file.
+[remote_watcher](python/remote_watcher.py)  | Watch the specified file on remote using scp, trigger action when there finds keyword in it.
+[stat_parse](python/stat_parse)  | Parse the ifconfig results and get the pkts/bytes number.
+[tls_server](python/tls_server)  | A simple tls server by python, which enable tls, and allow server to check client's certificate.
+[wsgi](python/wsgi)  | A demo to show how to use wsgi and paste deployment to provide a web service. Run `python server.py` and get the version information by visiting localhost:8080.
 
 ## [shell](shell)
 Useful shell functions.
@@ -99,8 +99,9 @@ Name | Description
 cpu | Get overall cpu utilization at linux platform.
 ether_bridge | Connect to network interface and forward ethernet packets between them bidirectionally, supporting options.
 getIP | Some scripts to get local ip address of the network interfaces.
-rm.sh | A much safer rm script, which can automatically backup removed files, in case deleting useful data (beta version).
+[netlink](system/netlink) | Test bidirectional communication between userspace and kernelspace, using low-level netlink APIs in the userspace, and libnl APIs in the kernelspace.
 [nss](system/nss) | This script will show all ip address inside each network namespace. If give a parameter, then it will show the network namespace containing the key. This is useful for openstack debugging.
+rm.sh | A much safer rm script, which can automatically backup removed files, in case deleting useful data (beta version).
 service | Example of a system service script in Debian/Ubuntu system, supporting running complicated command with arbitrary parameters.
 socket | Example of socket programing using C
 sysctl.conf | Optimized configuration for /etc/sysctl.conf.
