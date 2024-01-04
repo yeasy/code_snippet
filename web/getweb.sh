@@ -8,9 +8,9 @@
 # Usage:
 # getweb.sh [-d save_dir] WEBSITE_URL
 
-SAVE_DIR="$PWD/sync_website" #save to sync_website under the current directory
+SAVE_DIR="$HOME/Downloads/sync_web" #save to sync_website under the current directory
 URL=""
-AGENT="Mozilla/6.0"
+AGENT="Mozilla/8.0"
 
 OPTION="-e robots=off"  # Not tell a robot
 OPTION+=" -x" # Create a hierarchy of directories
@@ -25,6 +25,7 @@ OPTION+=" -np" # No try parent directory
 OPTION+=" -t 3" # Try times
 OPTION+=" -E" # adjust-extension, will add html suffix for dynamic page like js/asp...
 OPTION+=" -U $AGENT"  # Set agent header
+#OPTION+=" --load-cookies=$HOME/Downloads/cookies.txt"  # Using cookie
 
 #echo $OPTION
 
