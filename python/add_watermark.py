@@ -1,5 +1,8 @@
+# Usage: python3 add_watermark.py --input ~/input.pdf --watermark "watermark"
 import io
 import argparse
+import os
+
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
@@ -21,8 +24,8 @@ def add_watermark(pdf_input_path, watermark_text, pdf_output_path):
 	can.setFont("Helvetica", 28)
 
 	# watermark text
-	for i in range(100, 600, 200):  # horizontal
-		for j in range(100, 900, 300):  # vertical
+	for i in range(50, 600, 200):  # horizontal
+		for j in range(100, 1200, 300):  # vertical
 			can.saveState()
 			can.translate(i, j)
 			can.rotate(45)
@@ -55,12 +58,14 @@ def main():
 	parser.add_argument("--watermark", help="Watermark text",
 	                    default="Watermark Text")
 	parser.add_argument("--output", help="Output PDF file",
-	                    default="output.pdf")
-
+	                    default="")
 	args = parser.parse_args()
 
-	add_watermark(args.input, args.watermark, args.output)
+	input = args.input
+	output = args.output or f"{os.path.splitext(input)[0]}_marked.pdf"
+	add_watermark(input, args.watermark, output)
 
+	print(f"Output file to {output}")
 
 if __name__ == "__main__":
 	main()
