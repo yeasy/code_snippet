@@ -7,6 +7,8 @@ from PyPDF2 import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.colors import Color, black
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfmetrics
 
 
 def add_watermark(pdf_input_path, watermark_text, pdf_output_path):
@@ -21,14 +23,25 @@ def add_watermark(pdf_input_path, watermark_text, pdf_output_path):
 	# set transparency to 10%
 	fill_color = Color(black.red, black.green, black.blue, alpha=0.1)
 	can.setFillColor(fill_color)
-	can.setFont("Helvetica", 28)
+
+	# register TTF fonts
+	pdfmetrics.registerFont(TTFont('Songti', '/System/Library/Fonts/Supplemental/Songti.ttc'))
+	pdfmetrics.registerFont(TTFont('Helvetica', 'helvetica.ttc'))
+
+	# Function to set appropriate font
+	def set_font(can, text):
+		if any('\u4e00' <= char <= '\u9fff' for char in text):
+			can.setFont("Songti", 28)
+		else:
+			can.setFont("Helvetica", 28)
 
 	# watermark text
-	for i in range(50, 600, 200):  # horizontal
-		for j in range(100, 1200, 300):  # vertical
+	for i in range(100, 300, 300):  # horizontal
+		for j in range(100, 700, 300):  # vertical
 			can.saveState()
 			can.translate(i, j)
 			can.rotate(45)
+			set_font(can, watermark_text)
 			can.drawString(0, 0, watermark_text)
 			can.restoreState()
 
@@ -54,11 +67,11 @@ def main():
 	parser = argparse.ArgumentParser(
 		description="Add a watermark to a PDF file.")
 	parser.add_argument("--input", help="Input PDF file",
-	                    default="input.pdf")
+						default="input.pdf")
 	parser.add_argument("--watermark", help="Watermark text",
-	                    default="Watermark Text")
+						default="Watermark Text")
 	parser.add_argument("--output", help="Output PDF file",
-	                    default="")
+						default="")
 	args = parser.parse_args()
 
 	input = args.input
