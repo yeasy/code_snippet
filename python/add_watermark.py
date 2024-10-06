@@ -11,12 +11,20 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 
 
-def add_watermark(pdf_input_path, watermark_text, pdf_output_path):
+def add_watermark(pdf_input_path, watermark_text, pdf_output_path, skip_firstpage):
 	# create a pdf reader
 	input_pdf = PdfReader(pdf_input_path)
 	output_pdf = PdfWriter()
 
-	# create a PDF canvas
+	page = input_pdf.pages[0]
+
+	# Access the media box to get width and height
+	page_width = float(page.mediabox.upper_right[0]) - float(
+		page.mediabox.lower_left[0])
+	page_height = float(page.mediabox.upper_right[1]) - float(
+		page.mediabox.lower_left[1])
+
+	# create a PDF canvas for the watermark layer
 	packet = io.BytesIO()
 	can = canvas.Canvas(packet, pagesize=letter)
 
@@ -36,8 +44,8 @@ def add_watermark(pdf_input_path, watermark_text, pdf_output_path):
 			can.setFont("Helvetica", 28)
 
 	# watermark text
-	for i in range(100, 300, 300):  # horizontal
-		for j in range(100, 700, 300):  # vertical
+	for i in range(100, int(page_width*0.7), 300):  # horizontal
+		for j in range(100, int(page_height*0.7), 300):  # vertical
 			can.saveState()
 			can.translate(i, j)
 			can.rotate(45)
@@ -54,7 +62,7 @@ def add_watermark(pdf_input_path, watermark_text, pdf_output_path):
 	# add watermark
 	for i in range(len(input_pdf.pages)):
 		page = input_pdf.pages[i]
-		if i != 0:  # skip the first page
+		if not (skip_firstpage and i == 0):  # skip the first page
 			page.merge_page(new_pdf.pages[0])
 		output_pdf.add_page(page)
 
@@ -72,11 +80,13 @@ def main():
 						default="Watermark Text")
 	parser.add_argument("--output", help="Output PDF file",
 						default="")
+	parser.add_argument('--skip-firstpage', action='store_true', default=False,
+	                    help='Skip the first page (default: False)')
 	args = parser.parse_args()
 
 	input = args.input
 	output = args.output or f"{os.path.splitext(input)[0]}_marked.pdf"
-	add_watermark(input, args.watermark, output)
+	add_watermark(input, args.watermark, output, args.skip_firstpage)
 
 	print(f"Output file to {output}")
 
