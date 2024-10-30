@@ -1,10 +1,12 @@
 # Usage: python3 video_highlight.py --input path-to-video-file
 import argparse
+import multiprocessing
 import os
 import random
+import re
 import string
 import subprocess
-import re
+import time
 from pathlib import Path
 import concurrent.futures
 
@@ -83,26 +85,26 @@ def cut_segment(i, pair, seg_files, input_video):
 	seg_files[i] = seg_file
 
 
-def processVideo(input_video, output_video):
-	origin_duration = get_video_duration(input_video)
-	if origin_duration <= 0:
-		print("Invalid video duration.")
-		return
-	print(f"The duration of the original video is: {origin_duration} seconds")
-
-	max_volume, mean_volume = get_volume_info(input_video)
+def get_reserve_segs(audio_track, origin_duration):
+	"""
+	Calculate the segment list from given audio or video
+	:param audio_track: 
+	:return: 
+	"""
+	max_volume, mean_volume = get_volume_info(audio_track)
 	print(f"Max Volume = {max_volume} db, Mean Volume = {mean_volume} db")
 
-	command = ['ffmpeg', '-i', str(input_video), '-vn', '-af',
-	           f'aresample=22050,silencedetect=noise={float(max_volume)-20.0}dB:d=3', '-f', 'null',
+	command = ['ffmpeg', '-i', str(audio_track), '-vn', '-af',
+	           f'aresample=22050,silencedetect=noise={0.4*float(max_volume)+0.6*float(mean_volume)}dB:d=3.5', '-f', 'null',
 	           '-']
 	output = run_command(command, get_output=True)
 
 	# Parse the silence segments and convert to floating format
-	silence_starts = [float(match) + 1.0 for match in
+	silence_starts = [float(match) + 1.5 for match in
 	                  re.findall(r'silence_start: (\d+\.?\d*)', output)]
-	silence_ends = [float(match) - 0.5 for match in
+	silence_ends = [float(match) - 1.0 for match in
 	                re.findall(r'silence_end: (\d+\.?\d*)', output)]
+
 
 	if not silence_starts:
 		print("No silent segments are found")
@@ -116,16 +118,46 @@ def processVideo(input_video, output_video):
 	# Calculate all non-silence segments
 	reserve_segs = list(zip(silence_ends, silence_starts))
 	reserve_segs = [(start, end) for start, end in reserve_segs if
-	                end - start >= 4.0]
+	                end - start >= 4.0] # at least active 2.0 seconds
 	result_duration = sum(end - start for start, end in reserve_segs)
+	print(
+		f"Will extract {result_duration:.2f}s from {origin_duration:.2f}s, rate={100.0 * result_duration / origin_duration:.2f} %")
+
 	reserve_segs = [(sec_to_ts(range[0]), sec_to_ts(range[1])) for range in
 	                reserve_segs]
+
+	with open('reserve_seg_list.txt', 'w') as file:
+		for tup in reserve_segs:
+			line = ','.join(tup)  # Join tuple elements with a comma
+			file.write(line + '\n')
+	return reserve_segs
+
+def process_video(input_video, output_video, audio_track="", seg_list_file="", dry_run=False):
+	if not audio_track:
+		audio_track = input_video
+	origin_duration = get_video_duration(audio_track)
+	if origin_duration <= 0:
+		print("Invalid video duration.")
+		return
+	print(f"Original video length is: {origin_duration}s")
+
+	if not seg_list_file:
+		print("Calculating segs...")
+		reserve_segs = get_reserve_segs(audio_track, origin_duration)
+	else:
+		print(f"Loading segs from {seg_list_file}")
+		with open(seg_list_file, 'r') as file:
+			reserve_segs = [line.strip().split(',') for line in file]
+			
 	print(
-		f"Extracting [{len(reserve_segs)}] highlight segments, highlight/origin={result_duration:.2f}/{origin_duration:.2f} seconds: {reserve_segs}")
+		f"Extracted {len(reserve_segs)} highlighted segments: {reserve_segs}")
+	if dry_run:
+		print("Dry run mode, will stop here before cutting the video into segments")
+		return
 
 	seg_files = [''] * len(reserve_segs)
-	# ThreadPoolExecutor
-	with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+	# ThreadPoolExecutor to cut video into segs, and add their names to the seg_files
+	with concurrent.futures.ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
 		results = [
 			executor.submit(cut_segment, index, pair, seg_files, input_video)
 			for index, pair
@@ -146,8 +178,10 @@ def processVideo(input_video, output_video):
 	                  # '-c:a', 'aac',
 	                  str(output_video)]
 	run_command(concat_command)
+	
+	result_duration = get_video_duration(output_video)
 	print(
-		f"Output highlight video to {output_video}, extract {result_duration:.2f} seconds from {origin_duration:.2f} seconds, rate={100.0 * result_duration / origin_duration:.2f} %")
+		f"Output highlight video to {output_video}, extract {result_duration:.2f}s from {origin_duration:.2f}s, rate={100.0 * result_duration / origin_duration:.2f} %")
 
 	# Delete those segments
 	for seg_file in seg_files:
@@ -163,6 +197,12 @@ def main():
 	parser.add_argument("-i", "--input", help="path to the input video file")
 	parser.add_argument("-o", "--output", default="",
 	                    help="path to the output video file")
+	parser.add_argument("-a", "--audio_track", default="",
+	                    help="optional, path to the audio track file that has no vocal")
+	parser.add_argument("-s", "--seg_list", default="",
+	                    help="optional, path to the seg list file, each line is a seg such as ('00:26:51.75', '00:27:5.18')")
+	parser.add_argument("-d", "--dry-run", action="store_true",
+	                    help="perform a dry run (only calculate the segs) without cutting video")
 	args = parser.parse_args()
 
 	# Process starts here
@@ -171,8 +211,16 @@ def main():
 		parser.print_usage()
 		return
 	output = args.output or f"{os.path.splitext(input)[0]}_highlight.mp4"
-	processVideo(input, output)
+	audio_track = args.audio_track
+	seg_list = args.seg_list
+	dry_run = args.dry_run
+
+	process_video(input, output, audio_track, seg_list, dry_run)
 
 
 if __name__ == "__main__":
+	start_time = time.time()  # Record start time
 	main()
+	end_time = time.time()  # Record end time
+
+	print(f"Total running time: {end_time - start_time:.2f}s")
