@@ -2,6 +2,7 @@
 import io
 import argparse
 import os
+import sys
 
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
@@ -11,7 +12,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 
 
-def add_watermark(pdf_input_path, watermark_text, pdf_output_path, skip_firstpage):
+def add_watermark(pdf_input_path, watermark_text, pdf_output_path, change_firstpage):
 	# create a pdf reader
 	input_pdf = PdfReader(pdf_input_path)
 	output_pdf = PdfWriter()
@@ -44,7 +45,7 @@ def add_watermark(pdf_input_path, watermark_text, pdf_output_path, skip_firstpag
 			can.setFont("Helvetica", 28)
 
 	# watermark text
-	for i in range(100, int(page_width*0.7), 300):  # horizontal
+	for i in range(100, int(page_width*0.7), 400):  # horizontal
 		for j in range(100, int(page_height*0.7), 300):  # vertical
 			can.saveState()
 			can.translate(i, j)
@@ -62,7 +63,7 @@ def add_watermark(pdf_input_path, watermark_text, pdf_output_path, skip_firstpag
 	# add watermark
 	for i in range(len(input_pdf.pages)):
 		page = input_pdf.pages[i]
-		if not (skip_firstpage and i == 0):  # skip the first page
+		if change_firstpage or i != 0:  # skip the first page
 			page.merge_page(new_pdf.pages[0])
 		output_pdf.add_page(page)
 
@@ -78,15 +79,20 @@ def main():
 						default="input.pdf")
 	parser.add_argument("--watermark", help="Watermark text",
 						default="Watermark Text")
-	parser.add_argument("--output", help="Output PDF file",
+	parser.add_argument("--output", help="Output PDF file, "
+	                                     "default to be the input file with a _marked suffix",
 						default="")
-	parser.add_argument('--skip-firstpage', action='store_true', default=False,
-	                    help='Skip the first page (default: False)')
+	parser.add_argument('--keep-firstpage', action='store_true', default=False,
+	                    help='Also add water mark to the first page (default: False)')
 	args = parser.parse_args()
+
+	if len(sys.argv) == 1:
+		parser.print_help()
+		sys.exit(1)
 
 	input = args.input
 	output = args.output or f"{os.path.splitext(input)[0]}_marked.pdf"
-	add_watermark(input, args.watermark, output, args.skip_firstpage)
+	add_watermark(input, args.watermark, output, args.keep_firstpage)
 
 	print(f"Output file to {output}")
 
