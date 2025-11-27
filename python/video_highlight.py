@@ -4,6 +4,7 @@ import multiprocessing
 import os
 import random
 import re
+import shlex
 import string
 import subprocess
 import time
@@ -14,13 +15,13 @@ import concurrent.futures
 def run_command(command, get_output=False, check=True):
 	"""Execute a command through subprocess.run and return its output if required."""
 	try:
-		print(f"Executing: {' '.join(command)}")
+		print(f"Executing: {shlex.join(command)}")
 		process = subprocess.run(command, stdout=subprocess.PIPE,
 		                         stderr=subprocess.PIPE, text=True,
 		                         check=check)
 		return process.stdout.strip() + '\n' + process.stderr.strip() if get_output else None
 	except subprocess.CalledProcessError as e:
-		print(f"Error executing command: {' '.join(command)}\n{e}")
+		print(f"Error executing command: {shlex.join(command)}\n{e}")
 		if check:
 			raise
 		return None
@@ -72,7 +73,7 @@ def cut_segment(i, pair, seg_files, input_video):
 		"-loglevel", "quiet",
 		"-copyts",
 		"-ss", start_time,
-		"-i", input_video,
+		"-i", str(input_video),
 		"-ss", str(start_time),
 		"-to", str(end_time),
 		# "-c", "copy",
@@ -128,10 +129,11 @@ def get_reserve_segs(audio_track, origin_duration):
 	reserve_segs = [(sec_to_ts(range[0]), sec_to_ts(range[1])) for range in
 	                reserve_segs]
 
-	with open('_temp_reserve_seg_list.txt', 'w') as file:
-		for tup in reserve_segs:
-			line = ','.join(tup)  # Join tuple elements with a comma
-			file.write(line + '\n')
+	#with open(f"_temp_reserve_seg_list_{''.join(random.choices(string.ascii_letters + string.digits, k=10))}.txt", 'w') as file:
+		#for tup in reserve_segs:
+			#line = ','.join(tup)  # Join tuple elements with a comma
+			#file.write(line + '\n')
+
 	return reserve_segs
 
 def process_video(input_video, output_video, audio_track="", seg_list_file="", dry_run=False):
